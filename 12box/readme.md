@@ -7,3 +7,7 @@ calculate a path to ensure that the first and last dot are adjacent that is 40px
 calculate a path to ensure each dot is only used once
 calculate a path to ensure lines don't cross
 Close the shape and fill it with #000
+
+<img src="https://github.com/smombartz/generative-art/blob/main/12box/grid-01.png" height="400px">
+<img src="https://github.com/smombartz/generative-art/blob/main/12box/grid-02.png" height="400px">
+<img src="https://github.com/smombartz/generative-art/blob/main/12box/grid-02b.png" height="400px">
