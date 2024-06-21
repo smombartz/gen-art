@@ -8,6 +8,10 @@ calculate a path to ensure each dot is only used once
 calculate a path to ensure lines don't cross
 Close the shape and fill it with #000
 
+## Run
+https://editor.p5js.org/smombartz/sketches/rWs5uClUj
+
+# Preview
 <img src="https://github.com/smombartz/generative-art/blob/main/12box/grid-01.png" height="400px">
 <img src="https://github.com/smombartz/generative-art/blob/main/12box/grid-02.png" height="400px">
 <img src="https://github.com/smombartz/generative-art/blob/main/12box/grid-02b.png" height="400px">
