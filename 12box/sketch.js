@@ -1,6 +1,6 @@
 // Variables
 let gridSize = 40;
-let lineColor = '#000000';
+let lineColor = 'rgba(0, 0, 0, 0.5)'; // Updated stroke color with alpha transparency
 let lineWeight = 2;
 let numberOfShapes = 50;
 let backgroundColor = '#FFFFFF';
@@ -12,8 +12,6 @@ let cornerRadius = 4;
 let grid = [];
 let paths = [];
 let cols, rows;
-
-// Assuming generatePath function exists and has been modified to check if a dot is used
 
 function setup() {
   createCanvas(canvasSize, canvasSize);
@@ -27,23 +25,14 @@ function setup() {
     }
   }
 
-  // Generate shapes without overlap
+  // Generate shapes
   for (let i = 0; i < numberOfShapes; i++) {
     let path = [];
-    let attempts = 0;
-    let success = false;
-    while (!success && attempts < 100) { // Limit attempts to prevent infinite loop
-      grid.forEach(dot => dot.used = false); // Reset usage for attempt
+    while (!generatePath(numberOfPaths, path)) {
+      grid.forEach(dot => dot.used = false);
       path = [];
-      if (generatePath(numberOfPaths, path)) {
-        if (!doesPathOverlap(path)) {
-          markPathAsUsed(path);
-          paths.push(path);
-          success = true;
-        }
-      }
-      attempts++;
     }
+    paths.push(path);
   }
 
   // Draw the grid
@@ -51,23 +40,6 @@ function setup() {
 
   // Draw the paths
   paths.forEach(drawPath);
-}
-
-function doesPathOverlap(path) {
-  // Check if any dot in the path is already used
-  for (let dot of path) {
-    if (grid[dot.x + dot.y * cols].used) {
-      return true; // Overlap found
-    }
-  }
-  return false; // No overlap
-}
-
-function markPathAsUsed(path) {
-  // Mark all dots in the path as used
-  path.forEach(dot => {
-    grid[dot.x + dot.y * cols].used = true;
-  });
 }
 
 function drawGrid() {
@@ -95,7 +67,8 @@ function drawPath(path) {
       vertex(path[i].x + offsetX, path[i].y + offsetY);
     }
     endShape(CLOSE);
-  } else {  beginShape();
+  } else {
+    beginShape();
     for (let i = 0; i < path.length; i++) {
       let current = path[i];
       let prev = path[i - 1] || path[path.length - 1];
