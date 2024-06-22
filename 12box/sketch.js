@@ -13,6 +13,8 @@ let grid = [];
 let paths = [];
 let cols, rows;
 
+// Assuming generatePath function exists and has been modified to check if a dot is used
+
 function setup() {
   createCanvas(canvasSize, canvasSize);
   cols = floor(width / gridSize);
@@ -25,14 +27,23 @@ function setup() {
     }
   }
 
-  // Generate shapes
+  // Generate shapes without overlap
   for (let i = 0; i < numberOfShapes; i++) {
     let path = [];
-    while (!generatePath(numberOfPaths, path)) {
-      grid.forEach(dot => dot.used = false);
+    let attempts = 0;
+    let success = false;
+    while (!success && attempts < 100) { // Limit attempts to prevent infinite loop
+      grid.forEach(dot => dot.used = false); // Reset usage for attempt
       path = [];
+      if (generatePath(numberOfPaths, path)) {
+        if (!doesPathOverlap(path)) {
+          markPathAsUsed(path);
+          paths.push(path);
+          success = true;
+        }
+      }
+      attempts++;
     }
-    paths.push(path);
   }
 
   // Draw the grid
@@ -40,6 +51,23 @@ function setup() {
 
   // Draw the paths
   paths.forEach(drawPath);
+}
+
+function doesPathOverlap(path) {
+  // Check if any dot in the path is already used
+  for (let dot of path) {
+    if (grid[dot.x + dot.y * cols].used) {
+      return true; // Overlap found
+    }
+  }
+  return false; // No overlap
+}
+
+function markPathAsUsed(path) {
+  // Mark all dots in the path as used
+  path.forEach(dot => {
+    grid[dot.x + dot.y * cols].used = true;
+  });
 }
 
 function drawGrid() {
