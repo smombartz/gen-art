@@ -8,7 +8,7 @@
 
 # Polyominoes
 - V1: bad approach - blocks overlap [Generator](https://smombartz.github.io/gen-art/polyominoes/index.html)
-- V2: color and outline versions [Outline Generator](https://smombartz.github.io/gen-art/polyominoes-2/index-outline.html) | [Color Generator](https://smombartz.github.io/gen-art/polyominoes-2/index-color.html) | [p5.js Sketch](https://editor.p5js.org/smombartz/sketches/DaXSL3zNh)
+- V2: color and outline versions [Outline Generator](https://smombartz.github.io/gen-art/polyominoes-2/index-outline.html) | [Color Generator](https://smombartz.github.io/gen-art/polyominoes-2/index-color.html) | [p5.js Sketch](https://editor.p5js.org/smombartz/sketches/DaXSL3zNh) | [Prompt](https://chatgpt.com/share/ea410790-1d29-42e0-b464-2ed1ebb66032)
 
 # p5js
 - watercolor effect
