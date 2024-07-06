@@ -1,43 +1,28 @@
 let cols, rows;
-let w = 20;
-let h = 20;
+let w = 40;
+let h = 40;
 let margin = 40;
 let numAdjacentSquares = 4; // Number of adjacent squares to find
 let usedColors = new Set();
 let canvas;
 
 function setup() {
-  cols = 20;
-  rows = 20;
-  canvas = createCanvas(w * cols + margin * 2, h * rows + margin * 2, SVG);
+  cols = 10;
+  rows = 10;
+  canvas = createCanvas(600 + margin * 2, 400 + margin * 2, SVG);
   canvas.parent("canvasContainer"); // Parent the canvas to a specific div
 
-  // Draw the grid with margin
-  drawGrid();
-
-  // Array to keep track of selected cells
-  let allSelectedCells = [];
-
-  // Loop through all cells in the grid
-  for (let j = 0; j < rows; j++) {
-    for (let i = 0; i < cols; i++) {
-      let currentCell = {col: i, row: j};
-
-      // Check if the current cell has already been selected
-      if (!isCellSelected(currentCell, allSelectedCells)) {
-        // Find and outline adjacent squares
-        let selectedCells = findAdjacentSquares(currentCell, numAdjacentSquares, allSelectedCells);
-        fillAndOutlineSelectedCells(selectedCells);
-        // Add selected cells to the list of all selected cells
-        allSelectedCells = allSelectedCells.concat(selectedCells);
-      }
-    }
-  }
-
   // Create a button to download the SVG
-  let button = createButton('Download as SVG');
-  button.mousePressed(downloadSVG);
-  button.parent("buttonContainer"); // Parent the button to a specific div
+  let downloadButton = createButton('Download as SVG');
+  downloadButton.mousePressed(downloadSVG);
+  downloadButton.parent("buttonContainer"); // Parent the button to a specific div
+
+  // Create a button to generate the grid again
+  let generateButton = createButton('Generate');
+  generateButton.mousePressed(generateGrid);
+  generateButton.parent("buttonContainer"); // Parent the button to a specific div
+
+  generateGrid(); // Initial grid generation
 }
 
 function drawGrid() {
@@ -45,7 +30,6 @@ function drawGrid() {
     for (let j = 0; j < rows; j++) {
       fill(255);
       stroke(0);
-      strokeWeight(0);
       rect(i * w + margin, j * h + margin, w, h);
     }
   }
@@ -69,45 +53,17 @@ function findAdjacentSquares(startCell, n, allSelectedCells) {
   return selectedCells;
 }
 
-function fillAndOutlineSelectedCells(selectedCells) {
+function fillSelectedCells(selectedCells) {
   let selectedColor = generateUniqueColor();
   usedColors.add(selectedColor);
 
   fill(selectedColor);
-  stroke(255, 0, 0);
-  strokeWeight(0);
+  noStroke(); // Remove the outline stroke
   beginShape();
   selectedCells.forEach(cell => {
     let x = cell.col * w + margin;
     let y = cell.row * h + margin;
     rect(x, y, w, h);
-  });
-  endShape();
-
-  let boundaryEdges = [];
-
-  selectedCells.forEach(cell => {
-    let x = cell.col * w + margin;
-    let y = cell.row * h + margin;
-    let edges = [
-      { x1: x, y1: y, x2: x + w, y2: y },
-      { x1: x + w, y1: y, x2: x + w, y2: y + h },
-      { x1: x + w, y1: y + h, x2: x, y2: y + h },
-      { x1: x, y1: y + h, x2: x, y2: y }
-    ];
-    edges.forEach(edge => {
-      if (!boundaryEdges.some(e => edgesEqual(e, edge))) {
-        boundaryEdges.push(edge);
-      } else {
-        boundaryEdges = boundaryEdges.filter(e => !edgesEqual(e, edge));
-      }
-    });
-  });
-
-  noFill();
-  beginShape();
-  boundaryEdges.forEach(edge => {
-    line(edge.x1, edge.y1, edge.x2, edge.y2);
   });
   endShape();
 }
@@ -136,11 +92,6 @@ function isCellSelected(cell, selectedCells) {
   return selectedCells.some(c => c.col === cell.col && c.row === cell.row);
 }
 
-function edgesEqual(edge1, edge2) {
-  return (edge1.x1 === edge2.x1 && edge1.y1 === edge2.y1 && edge1.x2 === edge2.x2 && edge1.y2 === edge2.y2) ||
-         (edge1.x1 === edge2.x2 && edge1.y1 === edge2.y2 && edge1.x2 === edge2.x1 && edge1.y2 === edge2.y1);
-}
-
 function generateUniqueColor() {
   let color;
   do {
@@ -157,4 +108,29 @@ function downloadSVG() {
                   String(now.getHours()).padStart(2, '0') +
                   String(now.getMinutes()).padStart(2, '0');
   save(`grid-${timestamp}.svg`);
+}
+
+function generateGrid() {
+  clear();
+  usedColors.clear(); // Clear used colors set
+  drawGrid();
+
+  // Array to keep track of selected cells
+  let allSelectedCells = [];
+
+  // Loop through all cells in the grid
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      let currentCell = {col: i, row: j};
+
+      // Check if the current cell has already been selected
+      if (!isCellSelected(currentCell, allSelectedCells)) {
+        // Find and outline adjacent squares
+        let selectedCells = findAdjacentSquares(currentCell, numAdjacentSquares, allSelectedCells);
+        fillSelectedCells(selectedCells);
+        // Add selected cells to the list of all selected cells
+        allSelectedCells = allSelectedCells.concat(selectedCells);
+      }
+    }
+  }
 }
