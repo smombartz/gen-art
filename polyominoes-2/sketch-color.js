@@ -1,14 +1,14 @@
 let cols, rows;
-let w = 40;
-let h = 40;
+let w = 20;
+let h = 20;
 let margin = 40;
 let numAdjacentSquares = 4; // Number of adjacent squares to find
 let usedColors = new Set();
 let canvas;
 
 function setup() {
-  cols = 10;
-  rows = 10;
+  cols = 20;
+  rows = 20;
   canvas = createCanvas(600 + margin * 2, 400 + margin * 2, SVG);
   canvas.parent("canvasContainer"); // Parent the canvas to a specific div
 
