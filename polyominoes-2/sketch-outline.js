@@ -11,38 +11,24 @@ function setup() {
   canvas = createCanvas(w * cols + margin * 2, h * rows + margin * 2, SVG);
   canvas.parent("canvasContainer"); // Parent the canvas to a specific div
 
-  // Draw the grid with margin
-  drawGrid();
-
-  // Array to keep track of selected cells
-  let allSelectedCells = [];
-
-  // Loop through all cells in the grid
-  for (let j = 0; j < rows; j++) {
-    for (let i = 0; i < cols; i++) {
-      let currentCell = {col: i, row: j};
-
-      // Check if the current cell has already been selected
-      if (!isCellSelected(currentCell, allSelectedCells)) {
-        // Find and outline adjacent squares
-        let selectedCells = findAdjacentSquares(currentCell, numAdjacentSquares, allSelectedCells);
-        outlineSelectedCells(selectedCells);
-        // Add selected cells to the list of all selected cells
-        allSelectedCells = allSelectedCells.concat(selectedCells);
-      }
-    }
-  }
   // Create a button to download the SVG
-  let button = createButton('Download as SVG');
-  button.mousePressed(downloadSVG);
-  button.parent("buttonContainer"); // Parent the button to a specific div
+  let downloadButton = createButton('Download as SVG');
+  downloadButton.mousePressed(downloadSVG);
+  downloadButton.parent("buttonContainer"); // Parent the button to a specific div
+
+  // Create a button to generate the grid again
+  let generateButton = createButton('Generate');
+  generateButton.mousePressed(generateGrid);
+  generateButton.parent("buttonContainer"); // Parent the button to a specific div
+
+  generateGrid(); // Initial grid generation
 }
 
 function drawGrid() {
   for (let i = 0; i < cols; i++) {
     for (let j = 0; j < rows; j++) {
       fill(255);
-      stroke(204,204,204);
+      stroke(204, 204, 204);
       strokeWeight(1);
       rect(i * w + margin, j * h + margin, w, h);
     }
@@ -128,8 +114,7 @@ function edgesEqual(edge1, edge2) {
          (edge1.x1 === edge2.x2 && edge1.y1 === edge2.y2 && edge1.x2 === edge2.x1 && edge1.y2 === edge2.y1);
 }
 
-function downloadSVG() {  
-  
+function downloadSVG() {
   let now = new Date();
   let timestamp = now.getFullYear().toString() +
                   String(now.getMonth() + 1).padStart(2, '0') +
@@ -137,4 +122,28 @@ function downloadSVG() {
                   String(now.getHours()).padStart(2, '0') +
                   String(now.getMinutes()).padStart(2, '0');
   save(`grid-${timestamp}.svg`);
+}
+
+function generateGrid() {
+  clear();
+  drawGrid();
+
+  // Array to keep track of selected cells
+  let allSelectedCells = [];
+
+  // Loop through all cells in the grid
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      let currentCell = {col: i, row: j};
+
+      // Check if the current cell has already been selected
+      if (!isCellSelected(currentCell, allSelectedCells)) {
+        // Find and outline adjacent squares
+        let selectedCells = findAdjacentSquares(currentCell, numAdjacentSquares, allSelectedCells);
+        outlineSelectedCells(selectedCells);
+        // Add selected cells to the list of all selected cells
+        allSelectedCells = allSelectedCells.concat(selectedCells);
+      }
+    }
+  }
 }
