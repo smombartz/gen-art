@@ -3,7 +3,7 @@
 - python uneven line generator, total possible combos: 9,373
 
 # 12 Box
-- [Generator]([url](https://smombartz.github.io/gen-art/12box/))
+- [Generator](https://smombartz.github.io/gen-art/12box/)
 - More up to date with SVG download [p5.js Sketch](https://editor.p5js.org/smombartz/sketches/rWs5uClUj)
 
 # Polyominoes
