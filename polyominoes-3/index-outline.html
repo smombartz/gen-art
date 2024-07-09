@@ -6,21 +6,104 @@
   <title>Grid with SVG Download</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/p5.js-svg@1.5.1/dist/p5.svg.min.js"></script>
-  <script src="sketch-outline.js"></script>
+  <script src="sketch.js"></script>
   <style>
     body {
+      font-family: Helvetica, Arial, sans-serif;
+    }
+    #variablesForm {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .column {
       display: flex;
       flex-direction: column;
+    }
+    .column .section {
+      margin-bottom: 20px;
+    }
+    .f-element {
+      display: flex;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
+      margin-bottom: 10px;
     }
-    #buttonContainer {
-      margin-top: 20px;
+    label {
+      width: 100px;
+      margin-right: 10px;
     }
+    input {
+      width: 40px;
+      text-align: right;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    input[type="number"] {
+      padding: 4px;
+    }
+    
   </style>
 </head>
 <body>
+  <form id="variablesForm">
+    <div class="column">
+      <div class="section">
+        <div class="f-element">
+          <label for="gridOffset">Grid Offset</label>
+          <input type="number" id="gridOffset" name="gridOffset" value="3">
+        </div>
+        <div class="f-element">
+          <label for="polyominoes">Polyominoes</label>
+          <input type="number" id="polyominoes" name="polyominoes" value="4">
+        </div>
+        <div class="f-element">
+          <label for="squareSize">Square Size</label>
+          <input type="number" id="squareSize" name="squareSize" value="20">
+        </div>
+      </div>
+      <div class="section">
+        <div class="f-element">
+          <label for="outlineStrokeWeight">Outline Stroke</label>
+          <input type="number" id="outlineStrokeWeight" name="outlineStrokeWeight" value="2">
+        </div>
+        <div class="f-element">
+          <label for="outlineColor">Outline Color</label>
+          <input type="color" id="outlineColor" name="outlineColor" value="#FF0000">
+        </div>
+      </div>
+    </div>
+    <div class="column">
+      <div class="section">
+        <div class="f-element">
+          <label for="gridBackground">Grid BG</label>
+          <input type="color" id="gridBackground" name="gridBackground" value="#FFFFFF">
+        </div>
+        <div class="f-element">
+          <label for="gridStroke">Grid Color</label>
+          <input type="color" id="gridStroke" name="gridStroke" value="#CCCCCC">
+        </div>
+        <div class="f-element">
+          <label for="gridStrokeWeight">Grid Stroke</label>
+          <input type="number" id="gridStrokeWeight" name="gridStrokeWeight" value="1">
+        </div>
+      </div>
+      <div class="section">
+        <div class="f-element">
+          <label for="height">Height</label>
+          <input type="number" id="height" name="height" value="800">
+        </div>
+        <div class="f-element">
+          <label for="width">Width</label>
+          <input type="number" id="width" name="width" value="800">
+        </div>
+        <div class="f-element">
+          <label for="margin">Margin</label>
+          <input type="number" id="margin" name="margin" value="40">
+        </div>
+      </div>
+    </div>
+    <button type="button" id="generateButton">Generate</button>
+  </form>
   <div id="canvasContainer"></div>
   <div id="buttonContainer"></div>
 </body>
