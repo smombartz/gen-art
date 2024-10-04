@@ -1,29 +1,43 @@
-let margin = 40; // 40px margin
-let squareSize = 20; // Default size of each square in pixels
-let width = 800; // Width of the canvas
-let height = 800; // Height of the canvas
-let cols = width / squareSize;
-let rows = height / squareSize;
-let offset = 3; // Max offset for randomizing the position
+let margin, squareSize, width, height, cols, rows, gridOffset, polyominoes;
+let gridStrokeWeight, gridStroke, gridBackground;
+let outlineColor, outlineStrokeWeight;
 let points = [];
-let numAdjacentSquares = 4; // Number of adjacent squares to find
 let canvas;
 
 function setup() {
+  // Initialize the variables with default values
+  initializeVariables();
+
   canvas = createCanvas(width + margin * 2, height + margin * 2, SVG);
-  canvas.parent("canvasContainer"); // Parent the canvas to a specific div
-  
+  canvas.parent("canvasContainer");
+
   // Create a button to download the SVG
   let downloadButton = createButton('Download as SVG');
   downloadButton.mousePressed(downloadSVG);
-  downloadButton.parent("buttonContainer"); // Parent the button to a specific div
+  downloadButton.parent("buttonContainer");
 
-  // Create a button to generate the grid again
-  let generateButton = createButton('Generate');
-  generateButton.mousePressed(generateGrid);
-  generateButton.parent("buttonContainer"); // Parent the button to a specific div
+  // Add event listener to the generate button
+  document.getElementById("generateButton").addEventListener("click", generateGrid);
 
   generateGrid(); // Initial grid generation
+}
+
+function initializeVariables() {
+  margin = parseInt(document.getElementById('margin').value);
+  squareSize = parseInt(document.getElementById('squareSize').value);
+  width = parseInt(document.getElementById('width').value);
+  height = parseInt(document.getElementById('height').value);
+  cols = Math.floor(width / squareSize);
+  rows = Math.floor(height / squareSize);
+  gridOffset = parseInt(document.getElementById('gridOffset').value);
+  polyominoes = parseInt(document.getElementById('polyominoes').value);
+  
+  gridStrokeWeight = parseInt(document.getElementById('gridStrokeWeight').value);
+  gridStroke = document.getElementById('gridStroke').value;
+  gridBackground = document.getElementById('gridBackground').value;
+  
+  outlineColor = document.getElementById('outlineColor').value;
+  outlineStrokeWeight = parseInt(document.getElementById('outlineStrokeWeight').value);
 }
 
 function generatePoints() {
@@ -31,8 +45,8 @@ function generatePoints() {
   for (let i = 0; i <= cols; i++) {
     let row = [];
     for (let j = 0; j <= rows; j++) {
-      let x = margin + i * squareSize + random(-offset, offset);
-      let y = margin + j * squareSize + random(-offset, offset);
+      let x = margin + i * squareSize + random(-gridOffset, gridOffset);
+      let y = margin + j * squareSize + random(-gridOffset, gridOffset);
       row.push({ x: x, y: y });
     }
     points.push(row);
@@ -40,9 +54,9 @@ function generatePoints() {
 }
 
 function drawGrid() {
-  background(255); // Clear the background
-  stroke('#CCC'); // Set stroke color to #CCC
-  strokeWeight(0); // Set stroke weight to 1px
+  background(gridBackground); // Use gridBackground
+  stroke(gridStroke); // Use gridStroke color
+  strokeWeight(gridStrokeWeight); // Use gridStrokeWeight
   noFill(); // No fill for the rectangles
 
   for (let i = 0; i < cols; i++) {
@@ -79,13 +93,13 @@ function findAdjacentSquares(startCell, n, allSelectedCells) {
       break;
     }
   }
-  
+
   return selectedCells;
 }
 
 function outlineSelectedCells(selectedCells) {
-  stroke(255, 0, 0);
-  strokeWeight(2);
+  stroke(outlineColor); // Use outlineColor
+  strokeWeight(outlineStrokeWeight); // Use outlineStrokeWeight
   noFill();
 
   let boundaryEdges = [];
@@ -163,6 +177,8 @@ function downloadSVG() {
 }
 
 function generateGrid() {
+  initializeVariables();
+  resizeCanvas(width + margin * 2, height + margin * 2); // Adjust the canvas size
   generatePoints();
   drawGrid();
 
@@ -177,7 +193,7 @@ function generateGrid() {
       // Check if the current cell has already been selected
       if (!isCellSelected(currentCell, allSelectedCells)) {
         // Find and outline adjacent squares
-        let selectedCells = findAdjacentSquares(currentCell, numAdjacentSquares, allSelectedCells);
+        let selectedCells = findAdjacentSquares(currentCell, polyominoes, allSelectedCells);
         outlineSelectedCells(selectedCells);
         // Add selected cells to the list of all selected cells
         allSelectedCells = allSelectedCells.concat(selectedCells);

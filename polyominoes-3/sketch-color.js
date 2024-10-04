@@ -12,7 +12,7 @@ let canvas;
 let alpha = 150; // Alpha value for fill color
 let strokeColor = '#CCC'; // Stroke color for the grid
 let strokeWeightGrid = 1; // Stroke weight for the grid
-let outlineColor = 'rgba(255, 0, 0, 1)'; // Outline color for the polyominoes
+let outlineColor = 'rgba(255, 255, 255, 1)'; // Outline color for the polyominoes
 let outlineWeight = 2; // Outline weight for the polyominoes
 
 function setup() {
