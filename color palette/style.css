@@ -1,0 +1,36 @@
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 20px;
+    background-color: #f7f7f7;
+    font-family: "Merriweather", serif;
+}
+
+#palette-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 34px;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(5, 40px);
+    grid-template-rows: repeat(4, 40px);
+    gap: 0px;
+}
+
+.grid-item {
+    width: 40px;
+    height: 40px;
+}
+
+h2 {
+    text-align: left;
+    margin: 0 0 8px 0;
+    font-size: 11px;
+    color: #333;
+}

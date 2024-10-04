@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Color Palettes">
+    <title>Color Palette Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Merriweather', serif;
+            padding: 20px;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .controls label, .controls select, .controls input {
+            margin: 5px;
+        }
+        .grid-container {
+            display: flex;
+            gap: 10px;
+        }
+        .grid-item {
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+        }
+        .palette-wrapper {
+            margin-bottom: 20px;
+        }
+        .save-button {
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Color Palette Generator</h1>
+
+    <!-- Controls for palette generation -->
+    <div class="controls">
+        <label for="numberOfColors">Number of Colors:</label>
+        <input type="number" id="numberOfColors" value="5" min="1" max="20">
+
+        <label for="startingColor">Starting Color:</label>
+        <input type="color" id="startingColor" value="#3498db">
+
+        <label for="paletteType">Palette Type:</label>
+        <select id="paletteType">
+            <option value="monochrome">Monochrome</option>
+            <option value="gradient">Gradient</option>
+            <option value="complementary">Complementary</option>
+            <option value="analogous">Analogous</option>
+            <option value="triadic">Triadic</option>
+            <option value="random">Random</option>
+        </select>
+
+        <button id="generateButton">Generate Palette</button>
+        <button id="saveButton" class="save-button">Save Palette</button>
+    </div>
+
+    <!-- Container for displaying palettes -->
+    <div id="palette-container"></div>
+
+    <script>
+        // Utility function to generate a random color in hex format
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // Function to convert a hex color to its RGB components
+        function hexToRgb(hex) {
+            const bigint = parseInt(hex.slice(1), 16);
+            return { r: (bigint >> 16) & 255, g: (bigint >> 8) & 255, b: bigint & 255 };
+        }
+
+        // Function to generate a palette based on user input
+        function generatePalette(numberOfColors = 5, startingColor = null, paletteType = 'monochrome') {
+            startingColor = startingColor || getRandomColor();
+            let colors = [startingColor];
+
+            // Get RGB values of the starting color
+            let { r, g, b } = hexToRgb(startingColor);
+
+            for (let i = 1; i < numberOfColors; i++) {
+                switch (paletteType) {
+                    case 'monochrome':
+                        colors.push(`rgb(${r + i * 10}, ${g + i * 10}, ${b + i * 10})`);
+                        break;
+                    case 'gradient':
+                        colors.push(`rgb(${r + i * 20}, ${g - i * 20}, ${b + i * 15})`);
+                        break;
+                    case 'complementary':
+                        colors.push(`rgb(${255 - r}, ${255 - g}, ${255 - b})`);
+                        break;
+                    case 'analogous':
+                        colors.push(`rgb(${(r + i * 30) % 256}, ${(g + i * 15) % 256}, ${(b + i * 15) % 256})`);
+                        break;
+                    case 'triadic':
+                        colors.push(`rgb(${(r + i * 60) % 256}, ${(g + i * 120) % 256}, ${(b + i * 180) % 256})`);
+                        break;
+                    default:
+                        colors.push(getRandomColor());
+                        break;
+                }
+            }
+
+            return colors.map(color => {
+                if (color.startsWith('rgb')) {
+                    // Convert RGB to Hex for consistent format
+                    const rgbValues = color.match(/\d+/g).map(Number);
+                    return `#${((1 << 24) + (rgbValues[0] << 16) + (rgbValues[1] << 8) + rgbValues[2]).toString(16).slice(1)}`;
+                }
+                return color;
+            });
+        }
+
+        // Function to create a palette UI
+        function createPalette(title, colorList) {
+            const container = document.getElementById('palette-container');
+            const paletteWrapper = document.createElement('div');
+            paletteWrapper.classList.add('palette-wrapper');
+            
+            const paletteTitle = document.createElement('h2');
+            paletteTitle.textContent = title;
+            paletteWrapper.appendChild(paletteTitle);
+
+            const gridContainer = document.createElement('div');
+            gridContainer.classList.add('grid-container');
+
+            colorList.forEach(color => {
+                const gridItem = document.createElement('div');
+                gridItem.classList.add('grid-item');
+                gridItem.style.backgroundColor = color;
+                gridContainer.appendChild(gridItem);
+            });
+
+            paletteWrapper.appendChild(gridContainer);
+            container.appendChild(paletteWrapper);
+        }
+
+        // Add event listener to the Generate Palette button
+        document.getElementById('generateButton').addEventListener('click', () => {
+            const numberOfColors = parseInt(document.getElementById('numberOfColors').value);
+            const startingColor = document.getElementById('startingColor').value;
+            const paletteType = document.getElementById('paletteType').value;
+
+            const colors = generatePalette(numberOfColors, startingColor, paletteType);
+            createPalette(`Custom Palette - ${paletteType}`, colors);
+        });
+
+        // Add event listener to the Save Palette button
+        document.getElementById('saveButton').addEventListener('click', () => {
+            const palettes = document.querySelectorAll('.palette-wrapper');
+            const savedPalettes = [];
+
+            palettes.forEach(palette => {
+                const title = palette.querySelector('h2').textContent;
+                const colors = Array.from(palette.querySelectorAll('.grid-item')).map(item => item.style.backgroundColor);
+                savedPalettes.push({ title, colors });
+            });
+
+            const blob = new Blob([JSON.stringify(savedPalettes, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'saved_palettes.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>

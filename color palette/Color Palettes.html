@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Color Palettes">
+    <title>Color Palettes</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="palette-container"></div>
+    <script>
+        const palettes = [
+            {
+                title: "Cézanne Bold",
+                colors: "#FF6347, #FFA07A, #FFD700, #FF4500, #FF8C00, #DC143C, #FF69B4, #FF1493, #FFB6C1, #ADFF2F, #7FFF00, #32CD32, #00FA9A, #00CED1, #1E90FF, #4682B4, #8A2BE2, #DA70D6, #EE82EE, #9932CC, #FF00FF, #BA55D3"
+            },
+            {
+                title: "Cézanne Pastel",
+                colors: "#A4C6E7, #B4B9D3, #DAC1AA, #F3D1C4, #E5C3C6, #D7BED8, #F2BEBE, #F4C3A4, #C0DAD3, #EEDFA9, #C8D1BE, #E8B9A6, #D3B6C7, #AFC8E0, #EEDBA5, #B7C7A8, #C9D8B6, #F6E8C4, #B4C6DD, #E8D4B1"
+            },
+            {
+                title: "Cézanne Complimentary",
+                colors: "#D95C5C, #F2A65E, #FFE28A, #7DCE82, #58A4B0, #4B95D9, #3D70A2, #A27DB2, #E68699, #EDB1D2, #D4D0F5, #D6EAF8, #A9D18E, #B7A57A, #DAD2BC, #9C9C6E, #678D58, #86A46E, #BA4E4E, #E7928A, #A1625A, #8C6F7B"
+            },
+            {
+                title: "Cézanne Gradient",
+                colors: "#F2D1B3, #E6B897, #DA9F7A, #CD8660, #BF6E48, #A6573A, #8E4231, #72332A, #576028, #7A8B40, #9FB969, #D3E495, #B8C9E2, #91A9CF, #6A8BB7, #5171A3, #41528C, #3D366E, #4F3D54, #6D516B, #9E8297, #C8B4C3"
+            },
+            {
+                title: "Yellow",
+                colors: "#FFF9C4, #FFF59D, #FFF176, #FFEE58, #FFEB3B, #FDD835, #FBC02D, #F9A825, #F57F17, #FFCA28, #FFC107, #FFB300, #FFA000, #FF8F00, #FF6F00, #FFD54F, #FFE082, #FFECB3, #FFF8E1, #FFD700"
+            },
+            {
+                title: "Cezanne Procreate ChatGPT",
+                colors: "#ffffff, #353038, #c68784, #c7ccb5, #ddba54, #607b7d, #ae7b2a, #577b35, #afd2e1, #8fb695, #cc0a34, #06b16c, #f8f8f1, #1d242c, #fadb6c, #8b9135, #155344, #3d5868, #e0b006, #e6d3bf, #9d3541, #7b898c, #e1e2de, #bd5329, #4c4b4e"
+            }
+        ];
+
+        function createPalette(title, colorList) {
+            const container = document.getElementById('palette-container');
+            const paletteWrapper = document.createElement('div');
+            const paletteTitle = document.createElement('h2');
+            paletteTitle.textContent = title;
+            paletteWrapper.appendChild(paletteTitle);
+
+            const gridContainer = document.createElement('div');
+            gridContainer.classList.add('grid-container');
+
+            const colors = colorList.split(',').map(color => color.trim());
+
+            colors.forEach(color => {
+                const gridItem = document.createElement('div');
+                gridItem.classList.add('grid-item');
+                gridItem.style.backgroundColor = color;
+                gridContainer.appendChild(gridItem);
+            });
+
+            paletteWrapper.appendChild(gridContainer);
+            container.appendChild(paletteWrapper);
+        }
+
+        palettes.forEach(palette => createPalette(palette.title, palette.colors));
+    </script>
+</body>
+</html>
