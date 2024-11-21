@@ -1,0 +1,105 @@
+<html>
+  <head>
+    <style>
+        canvas {
+            display: block;
+        }
+    </style>
+  </head>
+  <body>
+    <div id="dots" style="width: 100%; height: 100vh;">
+      <canvas id="dotCanvas"></canvas>
+    </div>
+    <script>
+        const container = document.getElementById('dots');
+        const canvas = document.getElementById('dotCanvas');
+        const ctx = canvas.getContext('2d');
+    
+        // Get device pixel ratio (DPI)
+        const dpi = window.devicePixelRatio;
+    
+        // Fix canvas DPI to prevent blurriness
+        function fixDPI() {
+            const styleHeight = +getComputedStyle(canvas).getPropertyValue("height").slice(0, -2);
+            const styleWidth = +getComputedStyle(canvas).getPropertyValue("width").slice(0, -2);
+    
+            canvas.setAttribute('height', styleHeight * dpi);
+            canvas.setAttribute('width', styleWidth * dpi);
+    
+            ctx.scale(dpi, dpi);
+        }
+    
+        // Resize canvas to match container dimensions and fix DPI
+        function resizeCanvas() {
+            canvas.style.width = `${container.clientWidth}px`;
+            canvas.style.height = `${container.clientHeight}px`;
+            fixDPI();
+        }
+    
+        resizeCanvas();
+    
+        // Adjustable variables
+        const dotRadius = 2; // Base radius of dots
+        const gap = 16; // Gap between dots
+        const scaleFactor = 2; // Maximum scale factor
+        const gradientFactor = 0.1; // Scale reduction per distance
+        const maxDistance = 10; // Maximum number of dots affected
+        const dotColor = "#CCC"; // Dot color
+    
+        // Utility to draw a single dot
+        function drawDot(x, y, scale) {
+            ctx.beginPath();
+            ctx.arc(x, y, dotRadius * scale, 0, 2 * Math.PI);
+            ctx.fillStyle = dotColor; // Set the color of the dot
+            ctx.fill();
+        }
+    
+        // Function to draw the grid of dots
+        function drawGrid(mouseX, mouseY) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+            const rows = Math.ceil(canvas.height / gap);
+            const cols = Math.ceil(canvas.width / gap);
+    
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < cols; col++) {
+                    const x = col * gap + gap / 2;
+                    const y = row * gap + gap / 2;
+    
+                    // Calculate distance to mouse pointer
+                    const dx = x - mouseX;
+                    const dy = y - mouseY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const steps = Math.floor(distance / gap);
+    
+                    // Calculate scale based on distance
+                    let scale = 1;
+                    if (steps < maxDistance) {
+                        scale = Math.max(1, scaleFactor - steps * gradientFactor);
+                    }
+    
+                    drawDot(x, y, scale);
+                }
+            }
+        }
+    
+        // Mouse movement handler
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = (e.clientX - rect.left) * dpi;
+            const mouseY = (e.clientY - rect.top) * dpi;
+    
+            drawGrid(mouseX / dpi, mouseY / dpi);
+        });
+    
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            drawGrid(-gap, -gap); // Default to a position offscreen
+        });
+    
+        // Initial rendering
+        drawGrid(-gap, -gap); // Default to a position offscreen
+    </script>
+  </body>
+</html>
