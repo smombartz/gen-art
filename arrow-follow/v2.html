@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arrow Grid</title>
+</head>
+<body>
+ <style>
+    canvas {
+      display: block;
+    }
+</style>
+<div id="arrows" style="width: 100%; height: 100vh;">
+<canvas id="arrowCanvas"></canvas>
+</div>
+
+<script>
+    const container = document.getElementById('arrows');
+    const canvas = document.getElementById('arrowCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Get device pixel ratio (DPI)
+    const dpi = window.devicePixelRatio;
+
+    // Fix canvas DPI to prevent blurriness
+    function fixDPI() {
+        // Get CSS dimensions of the canvas
+        const styleHeight = +getComputedStyle(canvas).getPropertyValue("height").slice(0, -2);
+        const styleWidth = +getComputedStyle(canvas).getPropertyValue("width").slice(0, -2);
+
+        // Set the actual canvas dimensions using DPI
+        canvas.setAttribute('height', styleHeight * dpi);
+        canvas.setAttribute('width', styleWidth * dpi);
+
+        // Scale the context to match DPI
+        ctx.scale(dpi, dpi);
+    }
+
+    // Resize canvas to match container dimensions and fix DPI
+    function resizeCanvas() {
+        canvas.style.width = `${container.clientWidth}px`;
+        canvas.style.height = `${container.clientHeight}px`;
+        fixDPI();
+    }
+
+    resizeCanvas();
+
+    // Grid properties
+    const arrowSize = 10;
+    const gap = 16;
+    const gridSpacing = arrowSize + gap;
+
+    // Utility to draw a single arrow
+    function drawArrow(x, y, rotation) {
+        ctx.save();
+
+        // Translate to the center of the arrow
+        ctx.translate(x, y);
+
+        // Rotate the canvas with a 90-degree offset
+        ctx.rotate(rotation + Math.PI / 2);
+
+        // Translate back to align the arrow correctly relative to the rotation point
+        ctx.translate(-arrowSize / 2, -arrowSize / 2);
+
+        // Draw the arrow
+        ctx.beginPath();
+        ctx.strokeStyle = "#D5D4D2";
+        ctx.lineWidth = 1;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.moveTo(0.5, 4.88462);
+        ctx.lineTo(4.88462, 0.5);
+        ctx.lineTo(9.5, 4.88462);
+        ctx.moveTo(4.88462, 0.5);
+        ctx.lineTo(4.88462, 9.5);
+        ctx.stroke();
+
+        ctx.restore();
+    }
+
+    // Function to draw the grid of arrows
+    function drawGrid(rotation) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Dynamically calculate rows and cols
+        const rows = Math.ceil(canvas.height / (gridSpacing * dpi));
+        const cols = Math.ceil(canvas.width / (gridSpacing * dpi));
+
+        for (let row = 0; row < rows; row++) {
+            for (let col = 0; col < cols; col++) {
+                const x = col * gridSpacing + gridSpacing / 2;
+                const y = row * gridSpacing + gridSpacing / 2;
+
+                drawArrow(x, y, rotation);
+            }
+        }
+    }
+
+    // Mouse movement handler
+    canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        // Calculate the angle from the center of the canvas to the mouse
+        const centerX = canvas.width / (2 * dpi);
+        const centerY = canvas.height / (2 * dpi);
+        const dx = mouseX - centerX;
+        const dy = mouseY - centerY;
+        const angle = Math.atan2(dy, dx);
+
+        // Redraw the grid with all arrows pointing in the same direction
+        drawGrid(angle);
+    });
+
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        resizeCanvas();
+        drawGrid(0);
+    });
+
+    // Initial rendering (all arrows point to the center)
+    drawGrid(0);
+</script>
+</body>
+</html>
