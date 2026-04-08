@@ -56,28 +56,66 @@ Same recipe always produces the same icon.
 
 ## Parameters
 
+### Structure
+
 | Parameter | Range | Effect |
 |-----------|-------|--------|
-| Symmetry | 6-fold / 3 mirror / 3 flip / dihedral | How the arm is stamped (see above) |
-| Arm size | 1–8 | Pieces per arm before symmetry. 2–3 = tight icons, 5–8 = complex |
-| Count | 4–24 | Icons per batch |
-| Fill | 0.4–0.98 | Piece width relative to rhombus. Higher = more solid |
-| Taper | 0–1.0 | Parallelogram → triangle. Auto-alternates at junctions |
-| Gap | 0–8 | Separation between pieces at nodes (px) |
-| Rounding | 0–5 | Corner radius via quadratic Bézier (inset, doesn't change size) |
+| Symmetry | 8 modes (see below) | How the arm is stamped |
+| Shape | 3 / 4 / 5 / 6 / 8 / circle | Grid boundary polygon — pieces are clipped to this outline |
+| Piece | bar / diamond / hex / arrow / chevron / hourglass | Base piece geometry |
+| Arm size | 1–20 | Tree-grown pieces per arm (connected random walk) |
+| Scatter | 0–20 | Randomly placed pieces (unconnected, anywhere in wedge) |
+| Grid size | 2–7 | Hex lattice radius. Smaller = fewer, larger pieces |
+
+### Symmetry modes
+
+| Mode | Wedge | Copies | Character |
+|------|-------|--------|-----------|
+| 6-fold (C6) | 60° | 6 | Pure rotation, chiral |
+| 3 mirror (D3) | 60° | 6 | Bilateral within 120° sectors |
+| 3 flip | 60° | 6 | Pinwheel, alternating chirality |
+| Dihedral (D6) | 30° | 12 | Maximum symmetry, densest result |
+| 2 mirror (D2) | 90° | 4 | Cross/butterfly patterns |
+| 3-fold (C3) | 120° | 3 | Chiral triangular |
+| 2-fold (C2) | 180° | 2 | Playing-card symmetry |
+| Mirror (D1) | 180° | 2 | Rorschach bilateral |
+
+### Appearance
+
+| Parameter | Range | Effect |
+|-----------|-------|--------|
+| Width | 0.1–1.0 | Piece thickness perpendicular to edge |
+| Height | 0.1–1.0 | Piece length along edge |
+| Gap | −100–100 | Offsets pieces outward (positive) or inward (negative) from center |
+| Taper | 0–1.0 | Width difference between ends. Auto-alternates at junctions via 2-coloring |
+| Rounding | 0–15 | Corner radius via quadratic Bézier |
 | Background | swatches | Preview background color |
 
 ## Output
 
-- **SVG** — Copy SVG button exports the selected icon at 512px with optional background
+- **SVG** — Copy SVG exports the selected icon at 512px with optional background
 - **Seed** — Copy Seed exports the full parameter recipe for reproduction
+- **Generate** — Produces 50 unique icons per batch
+- **Load 50 more** — Appends another 50 unique icons (deduped against existing)
+
+## Presets
+
+Save and restore parameter combinations:
+
+- **Save** — type a name, click Save. Stores all settings in localStorage.
+- **Load** — click a preset name to restore all settings and regenerate.
+- **Delete** — × button removes a preset.
+- **Export** — downloads all presets as `iso-icon-presets.json`.
+- **Import** — loads presets from a JSON file, merges with existing without overwriting.
 
 ## Technical notes
 
 - Single HTML file, vanilla JS, no build step
 - Triangular lattice uses axial hex coordinates with 6-direction adjacency
 - Node polarity (taper alternation) computed via BFS 2-coloring of the edge graph
-- Corner rounding uses quadratic Bézier curves cut inward from vertices — no stroke expansion
-- Seeded PRNG: mulberry32 (32-bit state, full period)
+- Corner rounding uses quadratic Bézier curves cut inward from vertices
+- Seeded PRNG: mulberry32 (32-bit state, full period) — same seed + params = same icon
+- Deduplication via edge-set fingerprinting prevents duplicate icons in batches
+- Shape boundary uses regular polygon math for point-in-polygon testing
 - 60° rotation in axial coords: `(q, r) → (−r, q + r)`
 - Mirror across vertical axis: `(q, r) → (−q − r, r)`

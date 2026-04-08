@@ -35,6 +35,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .top{display:flex;gap:6px;flex-wrap:wrap}
 .top button{padding:5px 10px;font-size:12px;font-weight:500;border:1px solid #ccc;background:#fff;border-radius:7px;cursor:pointer}
 .top button:hover{background:#eee}
+.color-row{display:flex;gap:6px;flex-wrap:wrap}
+.color-swatch{width:28px;height:28px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:border-color .1s}
+.color-swatch:hover,.color-swatch.on{border-color:#1a1a1a}
 .preset-item{display:flex;align-items:center;gap:4px;margin-bottom:4px}
 .preset-item button{font-size:11px;padding:3px 8px;border:1px solid #ccc;background:#fff;border-radius:5px;cursor:pointer;color:#1a1a1a}
 .preset-item button:hover{background:#eee}
@@ -78,25 +81,24 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 <hr class="sep">
 
 <div class="s"><div class="r"><label>Width</label><span id="wv">0.88</span></div>
-<input type="range" min="0.1" max="4.0" step="0.01" value="0.88" id="wd" oninput="P.wd=+this.value;throttledRerender()"></div>
+<input type="range" min="0.1" max="1.0" step="0.01" value="0.88" id="wd" oninput="P.wd=+this.value;throttledRerender()"></div>
 
 <div class="s"><div class="r"><label>Height</label><span id="hv">0.85</span></div>
-<input type="range" min="0.1" max="4.0" step="0.01" value="0.85" id="ht" oninput="P.ht=+this.value;throttledRerender()"></div>
+<input type="range" min="0.1" max="1.0" step="0.01" value="0.85" id="ht" oninput="P.ht=+this.value;throttledRerender()"></div>
 
 <div class="s"><div class="r"><label>Gap</label><span id="gv">0</span></div>
 <input type="range" min="-100" max="100" step="1" value="0" id="ga" oninput="P.ga=+this.value;throttledRerender()"></div>
-
-<div class="s"><div class="r"><label>Spacing</label><span id="spv">0</span></div>
-<input type="range" min="0" max="100" step="0.5" value="0" id="sp" oninput="P.sp=+this.value;throttledRerender()"></div>
-
-<div class="s"><div class="r"><label>Border</label><span id="bv">0</span></div>
-<input type="range" min="0" max="10" step="0.5" value="0" id="bd" oninput="P.bd=+this.value;throttledRerender()"></div>
 
 <div class="s"><div class="r"><label>Taper</label><span id="tv">0.25</span></div>
 <input type="range" min="0" max="1.0" step="0.01" value="0.25" id="ta" oninput="P.ta=+this.value;throttledRerender()"></div>
 
 <div class="s"><div class="r"><label>Rounding</label><span id="rv">0</span></div>
-<input type="range" min="0" max="1" step="0.01" value="0" id="rn" oninput="P.rn=+this.value;throttledRerender()"></div>
+<input type="range" min="0" max="15" step="0.5" value="0" id="rn" oninput="P.rn=+this.value;throttledRerender()"></div>
+
+<hr class="sep">
+
+<div class="s"><label>Background</label>
+<div class="color-row" id="bgrow"></div></div>
 
 <hr class="sep">
 
@@ -119,7 +121,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 </div>
 
 <script>
-var P={sym:0,as:4,wd:0.88,ht:0.85,ta:0.25,ga:0,sp:0,bd:0,rn:0,bg:'#ffffff',sc:0,gr:5,sh:6,ps:0};
+var P={sym:0,as:4,wd:0.88,ht:0.85,ta:0.25,ga:0,rn:0,bg:'#ffffff',sc:0,gr:5,sh:6,ps:0};
 var BATCH=50;
 function totalPieces(){return P.as+P.sc}
 var allIcons=[];
@@ -376,20 +378,6 @@ function gridSVG(){
   return '<path d="'+d+'Z" fill="none" stroke="#e0e0dc" stroke-width="0.8"/>';
 }
 
-// --- Polygon inset (centroid pull) ---
-function insetPoly(pts,amount){
-  var cx=0,cy=0,n=pts.length;
-  for(var i=0;i<n;i++){cx+=pts[i][0];cy+=pts[i][1]}
-  cx/=n;cy/=n;
-  return pts.map(function(p){
-    var dx=p[0]-cx,dy=p[1]-cy;
-    var d=Math.sqrt(dx*dx+dy*dy);
-    if(d<0.1)return[p[0],p[1]];
-    var t=Math.max(0,d-amount)/d;
-    return[cx+dx*t,cy+dy*t];
-  });
-}
-
 // --- Render icon to SVG ---
 function iconToSVG(icon,sz,bgColor,showGrid){
   var ak=Object.keys(icon.edges);
@@ -424,44 +412,22 @@ function iconToSVG(icon,sz,bgColor,showGrid){
 
   if(showGrid) parts.push(gridSVG());
 
-  var strokeAttr=P.bd>0?' stroke="'+(bgColor&&bgColor!=='transparent'?bgColor:P.bg)+'" stroke-width="'+P.bd.toFixed(1)+'" paint-order="stroke"':'';
   ak.forEach(function(k){
     var e=parseEKey(k);
     var pts=plankPts(e.q1,e.r1,e.q2,e.r2,icon.pol);
-    if(P.sp>0) pts=insetPoly(pts,P.sp);
     if(P.rn>0){
-      var cornerAmt=Math.min(P.rn,0.5)/0.5; // 0→1 over P.rn 0→0.5
-      var ellipseAmt=Math.max(0,(P.rn-0.5)/0.5); // 0→1 over P.rn 0.5→1.0
-      // Phase 2: lerp vertices toward ellipse in local piece coords
-      if(ellipseAmt>0&&pts._mx!==undefined){
-        var emx=pts._mx,emy=pts._my,eux=pts._ux,euy=pts._uy,enx=pts._nx,eny=pts._ny;
-        var ehl=pts._halfL,eaw=pts._avgW;
-        var epts=[];
-        for(var j=0;j<pts.length;j++){
-          // Project vertex into local coords
-          var lx=(pts[j][0]-emx)*eux+(pts[j][1]-emy)*euy; // along edge
-          var ly=(pts[j][0]-emx)*enx+(pts[j][1]-emy)*eny; // perpendicular
-          // Ellipse position at same angle in local space
-          var la=Math.atan2(ly/eaw,lx/ehl);
-          var elx=ehl*Math.cos(la),ely=eaw*Math.sin(la);
-          // Lerp and project back to global
-          var flx=lx+(elx-lx)*ellipseAmt,fly=ly+(ely-ly)*ellipseAmt;
-          epts.push([emx+flx*eux+fly*enx,emy+flx*euy+fly*eny]);
-        }
-        pts=epts;
-      }
       var n=pts.length,segs=[];
       for(var i=0;i<n;i++){
         var prev=pts[(i-1+n)%n],cur=pts[i],next=pts[(i+1)%n];
         var d1x=prev[0]-cur[0],d1y=prev[1]-cur[1],d2x=next[0]-cur[0],d2y=next[1]-cur[1];
         var l1=Math.sqrt(d1x*d1x+d1y*d1y),l2=Math.sqrt(d2x*d2x+d2y*d2y);
-        var rr=Math.min(l1,l2)*0.5*cornerAmt;
+        var rr=Math.min(P.rn,l1/2,l2/2);
         segs.push(i===0?'M':'L',(cur[0]+d1x/l1*rr).toFixed(1),',',(cur[1]+d1y/l1*rr).toFixed(1),
           'Q',cur[0].toFixed(1),',',cur[1].toFixed(1),' ',(cur[0]+d2x/l2*rr).toFixed(1),',',(cur[1]+d2y/l2*rr).toFixed(1));
       }
-      parts.push('<path d="',segs.join(''),'Z" fill="#1a1a1a"',strokeAttr,'/>');
+      parts.push('<path d="',segs.join(''),'Z" fill="#1a1a1a"/>');
     } else {
-      parts.push('<polygon points="',pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' '),'" fill="#1a1a1a"',strokeAttr,'/>');
+      parts.push('<polygon points="',pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' '),'" fill="#1a1a1a"/>');
     }
   });
   return parts.join('')+'</svg>';
@@ -489,27 +455,30 @@ function plankPts(q1,r1,q2,r2,pol){
   var mx=cx+ox,my=cy+oy;
   // Helper: point at (along, across) from midpoint
   function pt(a,n){return[mx+ux*a+nx*n,my+uy*a+ny*n]}
-  // Attach local frame for ellipse rendering
-  var avgW=(w1+w2)/2;
-  function tag(arr){arr._mx=mx;arr._my=my;arr._ux=ux;arr._uy=uy;arr._nx=nx;arr._ny=ny;arr._halfL=halfL;arr._avgW=avgW;return arr}
 
   if(P.ps===0){
-    return tag([pt(-halfL,w1),pt(halfL,w2),pt(halfL,-w2),pt(-halfL,-w1)]);
+    // Bar (trapezoid)
+    return[pt(-halfL,w1),pt(halfL,w2),pt(halfL,-w2),pt(-halfL,-w1)];
   } else if(P.ps===1){
-    return tag([pt(-halfL,0),pt(0,w1),pt(halfL,0),pt(0,-w2)]);
+    // Diamond — pointed both ends
+    return[pt(-halfL,0),pt(0,w1),pt(halfL,0),pt(0,-w2)];
   } else if(P.ps===2){
+    // Hex — 6-sided, wider in middle
     var mw=(w1+w2)/2;
-    return tag([pt(-halfL,w1*0.5),pt(-halfL*0.33,mw),pt(halfL*0.33,mw),pt(halfL,w2*0.5),pt(halfL*0.33,-mw),pt(-halfL*0.33,-mw)]);
+    return[pt(-halfL,w1*0.5),pt(-halfL*0.33,mw),pt(halfL*0.33,mw),pt(halfL,w2*0.5),pt(halfL*0.33,-mw),pt(-halfL*0.33,-mw)];
   } else if(P.ps===3){
-    return tag([pt(-halfL,w1),pt(halfL,0),pt(-halfL,-w1)]);
+    // Arrow — pointed toward node 2, flat at node 1
+    return[pt(-halfL,w1),pt(halfL,0),pt(-halfL,-w1)];
   } else if(P.ps===4){
+    // Chevron — V-shape pointing toward node 2
     var inset=halfL*0.5;
-    return tag([pt(-halfL,w1),pt(halfL,w2*0.4),pt(halfL-inset,0),pt(halfL,-w2*0.4),pt(-halfL,-w1)]);
+    return[pt(-halfL,w1),pt(halfL,w2*0.4),pt(halfL-inset,0),pt(halfL,-w2*0.4),pt(-halfL,-w1)];
   } else if(P.ps===5){
+    // Hourglass — pinched in middle
     var mid=Math.min(w1,w2)*0.2;
-    return tag([pt(-halfL,w1),pt(0,mid),pt(halfL,w2),pt(halfL,-w2),pt(0,-mid),pt(-halfL,-w1)]);
+    return[pt(-halfL,w1),pt(0,mid),pt(halfL,w2),pt(halfL,-w2),pt(0,-mid),pt(-halfL,-w1)];
   }
-  return tag([pt(-halfL,w1),pt(halfL,w2),pt(halfL,-w2),pt(-halfL,-w1)]);
+  return[pt(-halfL,w1),pt(halfL,w2),pt(halfL,-w2),pt(-halfL,-w1)];
 }
 
 // --- Batch generation ---
@@ -658,10 +627,8 @@ function updateReadouts(){
   $('wv').textContent=P.wd.toFixed(2);
   $('hv').textContent=P.ht.toFixed(2);
   $('gv').textContent=P.ga.toFixed(1);
-  $('spv').textContent=P.sp.toFixed(1);
-  $('bv').textContent=P.bd.toFixed(1);
   $('tv').textContent=P.ta.toFixed(2);
-  $('rv').textContent=P.rn.toFixed(2);
+  $('rv').textContent=P.rn;
   updPieces();
   updBtns();
 }
@@ -670,6 +637,7 @@ function updBtns(){
   $('symb').querySelectorAll('button').forEach(function(b,i){b.className=P.sym===i?'on':''});
   $('shb').querySelectorAll('button').forEach(function(b){b.className=+b.dataset.v===P.sh?'on':''});
   $('psb').querySelectorAll('button').forEach(function(b){b.className=+b.dataset.v===P.ps?'on':''});
+  $('bgrow').querySelectorAll('.color-swatch').forEach(function(s){s.className='color-swatch'+(s.dataset.c===P.bg?' on':'')});
 }
 
 // --- Symmetry buttons ---
@@ -699,6 +667,18 @@ function updBtns(){
   });
 })();
 
+// --- BG colors ---
+(function(){
+  ['#ffffff','#F26522','#1a1a1a','#2D5A27','#1B3A6B','#6B1B3A','#f5f0e0'].forEach(function(c){
+    var d=document.createElement('div');
+    d.className='color-swatch';
+    d.style.background=c;
+    if(c==='#ffffff')d.style.border='2px solid #ddd';
+    d.dataset.c=c;
+    d.onclick=function(){P.bg=c;renderGrid()};
+    $('bgrow').appendChild(d);
+  });
+})();
 
 function copySVG(){
   if(!allIcons.length)return;
@@ -713,7 +693,7 @@ function copySeed(){
   if(!allIcons.length)return;
   var icon=allIcons[selectedIdx];
   var psNames=['bar','diamond','hex','arrow','chevron','hourglass'];
-  var info='Seed: '+icon.seed+' | Sym: '+['6-fold','3-mirror','3-flip','dihedral','2-mirror','3-fold','2-fold','mirror'][P.sym]+' | Piece: '+(psNames[P.ps]||'bar')+' | Shape: '+(P.sh>=36?'circle':P.sh)+' | Grid: '+P.gr+' | Arm: '+P.as+' | Scatter: '+P.sc+' | Total: '+totalPieces()+' | Width: '+P.wd+' | Height: '+P.ht+' | Gap: '+P.ga+' | Spacing: '+P.sp+' | Taper: '+P.ta;
+  var info='Seed: '+icon.seed+' | Sym: '+['6-fold','3-mirror','3-flip','dihedral','2-mirror','3-fold','2-fold','mirror'][P.sym]+' | Piece: '+(psNames[P.ps]||'bar')+' | Shape: '+(P.sh>=36?'circle':P.sh)+' | Grid: '+P.gr+' | Arm: '+P.as+' | Scatter: '+P.sc+' | Total: '+totalPieces()+' | Width: '+P.wd+' | Height: '+P.ht+' | Gap: '+P.ga+' | Taper: '+P.ta;
   navigator.clipboard.writeText(info).then(function(){
     $('seedInfo').textContent='Copied: '+info;
   });
@@ -748,7 +728,7 @@ function loadPreset(preset){
   var keys=Object.keys(preset.params);
   for(var i=0;i<keys.length;i++) P[keys[i]]=preset.params[keys[i]];
   // Sync slider values
-  var sliders={wd:'wd',ht:'ht',ga:'ga',sp:'sp',bd:'bd',ta:'ta',rn:'rn',as:'as',sc:'sc',gr:'gr'};
+  var sliders={wd:'wd',ht:'ht',ga:'ga',ta:'ta',rn:'rn',as:'as',sc:'sc',gr:'gr'};
   Object.keys(sliders).forEach(function(k){
     var el=$(sliders[k]);
     if(el)el.value=P[k];

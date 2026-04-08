@@ -1,5 +1,94 @@
 # Change Log
 
+## 2026-04-08 - Two-phase rounding: corners → ellipse
+
+**What Changed:**
+- Rounding 0–0.5: proportional corner rounding (clamped at 0.5 of shortest edge, no artifacts)
+- Rounding 0.5–1.0: vertices lerp toward an ellipse fitted to the piece's bounding box
+- At 1.0: piece becomes a full oval/ellipse
+- Fixes zero-length line segment artifacts that occurred at high rounding values
+- Corner rounding amount = `min(l1,l2) * 0.5 * cornerAmt` where cornerAmt saturates at P.rn=0.5
+
+**Why:**
+- Rounding at 1.0 was creating degenerate paths (thin line artifacts) because corners consumed entire edges
+- User expected 1.0 to produce circles/ovals, not semicircles
+
+**Files Modified:**
+- `iso-icon-generator.html` - Two-phase rounding with ellipse interpolation in iconToSVG rendering
+
+---
+
+## 2026-04-08 - Proportional rounding (fixes non-uniform corners)
+
+**What Changed:**
+- Rounding formula changed from `Math.min(P.rn, l1/2, l2/2)` (absolute pixels) to `Math.min(l1, l2) * P.rn` (fraction of shortest edge)
+- Slider range changed from 0–15 to 0–0.5 (step 0.01)
+- Every corner now rounds the same proportion of its edges regardless of taper
+- At 0.5, each corner becomes a semicircle of its shortest adjacent edge
+
+**Why:**
+- Tapered pieces had visually non-uniform rounding — narrow ends appeared much more rounded than wide ends because the absolute radius consumed more of the short edges
+
+**Files Modified:**
+- `iso-icon-generator.html` - Changed rounding formula, slider range, readout format
+
+---
+
+## 2026-04-08 - Added Spacing control (polygon inset)
+
+**What Changed:**
+- Added `P.sp` (Spacing, 0–10, step 0.5, default 0) — shrinks each piece inward from all edges equally
+- `insetPoly()` function pulls each vertex toward the polygon centroid by P.sp pixels
+- Applied after plankPts, before rounding — works for all 6 piece shapes
+- Creates uniform visible gutters between adjacent pieces
+- Distinct from Gap (radial offset) — Spacing is local to each piece
+
+**Why:**
+- User wanted equal space around each piece, not just radial offset from center
+
+**Files Modified:**
+- `iso-icon-generator.html` - Added P.sp, Spacing slider, insetPoly(), updated readouts and preset sync
+
+---
+
+## 2026-04-08 - Preset save/load system
+
+**What Changed:**
+- Added preset section in controls: name input + Save button
+- Presets store all P parameters as a JSON snapshot in localStorage
+- Click a preset name to load it (restores all sliders, buttons, and regenerates)
+- × button to delete individual presets
+- Export button downloads all presets as `iso-icon-presets.json`
+- Import button loads presets from a JSON file (merges without overwriting existing names)
+- Saving with an existing name overwrites that preset
+
+**Why:**
+- User wanted to save and return to parameter combinations
+
+**Files Modified:**
+- `iso-icon-generator.html` - Added preset UI, save/load/delete/export/import functions
+
+---
+
+## 2026-04-08 - Performance optimizations for slider responsiveness
+
+**What Changed:**
+- Removed redundant `calcPol()` recalculation from `rerender()` — polarity is already stored on each icon at generation time
+- Added `requestAnimationFrame` throttling to all slider `oninput` handlers (caps renders at ~60fps)
+- Eliminated double icon generation in `regenerate()` — icons from dedup pass are now reused
+- Cached DOM nodes in `renderGrid()` — updates SVG in-place instead of destroying/recreating all grid items
+- Debounced `countVariations()` from 10ms to 500ms with `clearTimeout` to prevent redundant runs
+- Added fingerprint caching on icon objects (`icon._fp`) to avoid re-sorting edge keys
+- Converted SVG string building from `+=` concatenation to array push+join pattern
+
+**Why:**
+- Dragging sliders with 50+ icons loaded caused noticeable lag due to synchronous full-grid rebuilds on every input event
+
+**Files Modified:**
+- `iso-icon-generator.html` — all changes in `<script>` block
+
+---
+
 ## 2026-04-08 - Replaced Fill+Gap with Width+Height+Gap(offset)
 
 **What Changed:**

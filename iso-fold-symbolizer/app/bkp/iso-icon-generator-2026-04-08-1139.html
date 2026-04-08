@@ -78,10 +78,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 <hr class="sep">
 
 <div class="s"><div class="r"><label>Width</label><span id="wv">0.88</span></div>
-<input type="range" min="0.1" max="4.0" step="0.01" value="0.88" id="wd" oninput="P.wd=+this.value;throttledRerender()"></div>
+<input type="range" min="0.1" max="1.0" step="0.01" value="0.88" id="wd" oninput="P.wd=+this.value;throttledRerender()"></div>
 
 <div class="s"><div class="r"><label>Height</label><span id="hv">0.85</span></div>
-<input type="range" min="0.1" max="4.0" step="0.01" value="0.85" id="ht" oninput="P.ht=+this.value;throttledRerender()"></div>
+<input type="range" min="0.1" max="1.0" step="0.01" value="0.85" id="ht" oninput="P.ht=+this.value;throttledRerender()"></div>
 
 <div class="s"><div class="r"><label>Gap</label><span id="gv">0</span></div>
 <input type="range" min="-100" max="100" step="1" value="0" id="ga" oninput="P.ga=+this.value;throttledRerender()"></div>
@@ -430,23 +430,27 @@ function iconToSVG(icon,sz,bgColor,showGrid){
     var pts=plankPts(e.q1,e.r1,e.q2,e.r2,icon.pol);
     if(P.sp>0) pts=insetPoly(pts,P.sp);
     if(P.rn>0){
+      // Phase 1 (0–0.5): corner rounding. Phase 2 (0.5–1.0): lerp to ellipse.
       var cornerAmt=Math.min(P.rn,0.5)/0.5; // 0→1 over P.rn 0→0.5
       var ellipseAmt=Math.max(0,(P.rn-0.5)/0.5); // 0→1 over P.rn 0.5→1.0
-      // Phase 2: lerp vertices toward ellipse in local piece coords
-      if(ellipseAmt>0&&pts._mx!==undefined){
-        var emx=pts._mx,emy=pts._my,eux=pts._ux,euy=pts._uy,enx=pts._nx,eny=pts._ny;
-        var ehl=pts._halfL,eaw=pts._avgW;
+      // Compute ellipse target from bounding box of pts
+      if(ellipseAmt>0){
+        var ecx=0,ecy=0,n2=pts.length;
+        for(var j=0;j<n2;j++){ecx+=pts[j][0];ecy+=pts[j][1]}
+        ecx/=n2;ecy/=n2;
+        // Fit ellipse: use half-widths along principal axes
+        var maxDx=0,maxDy=0;
+        for(var j=0;j<n2;j++){
+          maxDx=Math.max(maxDx,Math.abs(pts[j][0]-ecx));
+          maxDy=Math.max(maxDy,Math.abs(pts[j][1]-ecy));
+        }
+        // Lerp each vertex toward its ellipse position
         var epts=[];
-        for(var j=0;j<pts.length;j++){
-          // Project vertex into local coords
-          var lx=(pts[j][0]-emx)*eux+(pts[j][1]-emy)*euy; // along edge
-          var ly=(pts[j][0]-emx)*enx+(pts[j][1]-emy)*eny; // perpendicular
-          // Ellipse position at same angle in local space
-          var la=Math.atan2(ly/eaw,lx/ehl);
-          var elx=ehl*Math.cos(la),ely=eaw*Math.sin(la);
-          // Lerp and project back to global
-          var flx=lx+(elx-lx)*ellipseAmt,fly=ly+(ely-ly)*ellipseAmt;
-          epts.push([emx+flx*eux+fly*enx,emy+flx*euy+fly*eny]);
+        for(var j=0;j<n2;j++){
+          var dx2=pts[j][0]-ecx,dy2=pts[j][1]-ecy;
+          var ang=Math.atan2(dy2,dx2);
+          var ex=ecx+maxDx*Math.cos(ang),ey=ecy+maxDy*Math.sin(ang);
+          epts.push([pts[j][0]+(ex-pts[j][0])*ellipseAmt,pts[j][1]+(ey-pts[j][1])*ellipseAmt]);
         }
         pts=epts;
       }
@@ -489,27 +493,30 @@ function plankPts(q1,r1,q2,r2,pol){
   var mx=cx+ox,my=cy+oy;
   // Helper: point at (along, across) from midpoint
   function pt(a,n){return[mx+ux*a+nx*n,my+uy*a+ny*n]}
-  // Attach local frame for ellipse rendering
-  var avgW=(w1+w2)/2;
-  function tag(arr){arr._mx=mx;arr._my=my;arr._ux=ux;arr._uy=uy;arr._nx=nx;arr._ny=ny;arr._halfL=halfL;arr._avgW=avgW;return arr}
 
   if(P.ps===0){
-    return tag([pt(-halfL,w1),pt(halfL,w2),pt(halfL,-w2),pt(-halfL,-w1)]);
+    // Bar (trapezoid)
+    return[pt(-halfL,w1),pt(halfL,w2),pt(halfL,-w2),pt(-halfL,-w1)];
   } else if(P.ps===1){
-    return tag([pt(-halfL,0),pt(0,w1),pt(halfL,0),pt(0,-w2)]);
+    // Diamond — pointed both ends
+    return[pt(-halfL,0),pt(0,w1),pt(halfL,0),pt(0,-w2)];
   } else if(P.ps===2){
+    // Hex — 6-sided, wider in middle
     var mw=(w1+w2)/2;
-    return tag([pt(-halfL,w1*0.5),pt(-halfL*0.33,mw),pt(halfL*0.33,mw),pt(halfL,w2*0.5),pt(halfL*0.33,-mw),pt(-halfL*0.33,-mw)]);
+    return[pt(-halfL,w1*0.5),pt(-halfL*0.33,mw),pt(halfL*0.33,mw),pt(halfL,w2*0.5),pt(halfL*0.33,-mw),pt(-halfL*0.33,-mw)];
   } else if(P.ps===3){
-    return tag([pt(-halfL,w1),pt(halfL,0),pt(-halfL,-w1)]);
+    // Arrow — pointed toward node 2, flat at node 1
+    return[pt(-halfL,w1),pt(halfL,0),pt(-halfL,-w1)];
   } else if(P.ps===4){
+    // Chevron — V-shape pointing toward node 2
     var inset=halfL*0.5;
-    return tag([pt(-halfL,w1),pt(halfL,w2*0.4),pt(halfL-inset,0),pt(halfL,-w2*0.4),pt(-halfL,-w1)]);
+    return[pt(-halfL,w1),pt(halfL,w2*0.4),pt(halfL-inset,0),pt(halfL,-w2*0.4),pt(-halfL,-w1)];
   } else if(P.ps===5){
+    // Hourglass — pinched in middle
     var mid=Math.min(w1,w2)*0.2;
-    return tag([pt(-halfL,w1),pt(0,mid),pt(halfL,w2),pt(halfL,-w2),pt(0,-mid),pt(-halfL,-w1)]);
+    return[pt(-halfL,w1),pt(0,mid),pt(halfL,w2),pt(halfL,-w2),pt(0,-mid),pt(-halfL,-w1)];
   }
-  return tag([pt(-halfL,w1),pt(halfL,w2),pt(halfL,-w2),pt(-halfL,-w1)]);
+  return[pt(-halfL,w1),pt(halfL,w2),pt(halfL,-w2),pt(-halfL,-w1)];
 }
 
 // --- Batch generation ---
