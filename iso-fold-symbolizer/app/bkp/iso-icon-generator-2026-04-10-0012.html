@@ -88,17 +88,17 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <div class="s"><label title="How the arm pattern is rotated/mirrored to fill the shape">Symmetry</label>
 <div class="bb" id="symb"></div></div>
 
-<div class="s"><label title="Boundary outline that contains the icon">Outline</label>
+<div class="s"><label title="Boundary shape that contains the icon">Shape</label>
 <div class="bb" id="shb"></div></div>
 
 <div class="s"><div class="r"><label title="Number of connected pieces grown from a seed point">Arm size</label><span id="asv">4</span></div>
 <input type="range" min="1" max="20" step="1" value="4" id="as" oninput="P.as=+this.value;updPieces();throttledRegenerate()"></div>
 
-<div class="s"><div class="r"><label title="Radius of the triangular lattice (larger = more room for pieces)">Grid size</label><span id="grv">4</span></div>
-<input type="range" min="2" max="7" step="1" value="4" id="gr" oninput="P.gr=+this.value;$('grv').textContent=P.gr;throttledRegenerate()"></div>
-
 <div class="s"><div class="r"><label title="Additional pieces placed randomly (not connected to the arm)">Scatter</label><span id="scv">0</span></div>
 <input type="range" min="0" max="20" step="1" value="0" id="sc" oninput="P.sc=+this.value;updPieces();throttledRegenerate()"></div>
+
+<div class="s"><div class="r"><label title="Radius of the triangular lattice (larger = more room for pieces)">Grid size</label><span id="grv">4</span></div>
+<input type="range" min="2" max="7" step="1" value="4" id="gr" oninput="P.gr=+this.value;$('grv').textContent=P.gr;throttledRegenerate()"></div>
 
 <div class="s"><div class="r"><label title="Size of each icon in the preview grid">Icon size</label><span id="isv">160</span></div>
 <input type="range" min="50" max="200" step="5" value="160" id="is" oninput="document.querySelector('.grid').style.setProperty('--icon-size',this.value+'px');$('isv').textContent=this.value"></div>
@@ -112,8 +112,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 
 <div id="shapePreview" style="display:flex;justify-content:center;padding:6px 0 8px"></div>
 
-<div class="s"><div class="r"><label title="Number of sides for the base polygon">Sides</label><span id="pnv">4</span></div>
-<input type="range" min="3" max="8" step="1" value="4" id="pn" oninput="P.pn=+this.value;$('pnv').textContent=this.value;throttledRerender()"></div>
+<div class="s"><label title="Shape preset shortcuts">Shape</label>
+<div class="bb" id="psb"></div></div>
 
 <div class="s"><div class="r"><label title="How wide each piece is perpendicular to its edge">Width</label><span id="wv">0.88</span></div>
 <input type="range" min="0.1" max="4.0" step="0.01" value="0.88" id="wd" oninput="onWidthChange(+this.value)"></div>
@@ -125,6 +125,9 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <div class="s"><div class="r"><label title="How long each piece is along its edge">Height</label><span id="hv">0.85</span></div>
 <input type="range" min="0.1" max="4.0" step="0.01" value="0.85" id="ht" oninput="onHeightChange(+this.value)"></div>
 
+<div class="s"><div class="r"><label title="Number of sides for the base polygon">Sides</label><span id="pnv">4</span></div>
+<input type="range" min="3" max="8" step="1" value="4" id="pn" oninput="P.pn=+this.value;$('pnv').textContent=this.value;throttledRerender()"></div>
+
 <div class="s"><div class="r"><label title="Polarity-aware taper: narrows one end of each piece, alternating direction at adjacent nodes">Trapeze</label><span id="pzv">0.25</span></div>
 <input type="range" min="0" max="1" step="0.01" value="0.25" id="pz" oninput="P.pz=+this.value;$('pzv').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
 
@@ -133,6 +136,9 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 
 <div class="s"><div class="r"><label title="Push edge midpoints inward (+) or outward (-)">Indent</label><span id="piv">0</span></div>
 <input type="range" min="-1" max="1" step="0.01" value="0" id="pi" oninput="P.pi=+this.value;$('piv').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
+
+<div class="s"><div class="r"><label title="Sharpen ends by collapsing toward centerline">Point</label><span id="pev">0</span></div>
+<input type="range" min="0" max="1" step="0.01" value="0" id="pe" oninput="P.pe=+this.value;$('pev').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
 
 <div class="s"><div class="r"><label title="Rotate the piece shape in degrees">Rotate</label><span id="prv">0</span></div>
 <input type="range" min="0" max="360" step="1" value="0" id="pr" oninput="P.pr=+this.value;$('prv').textContent=this.value;throttledRerender()"></div>
@@ -196,7 +202,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 </div>
 
 <script>
-var P={sym:0,as:4,wd:0.88,ht:0.85,pz:0.25,ga:0,sp:0,rn:0,rc:[1,1,1,1],bg:'#ffffff',sc:0,gr:4,sh:6,pn:4,pk:0,pi:0,pr:0,lk:0};
+var P={sym:0,as:4,wd:0.88,ht:0.85,pz:0.25,ga:0,sp:0,rn:0,rc:[1,1,1,1],bg:'#ffffff',sc:0,gr:4,sh:6,pn:4,pk:0,pi:0,pe:0,pr:0,lk:0};
 var BATCH=20;
 function totalPieces(){return P.as+P.sc}
 var allIcons=[];
@@ -555,14 +561,12 @@ function pieceVerts(halfL,halfW,polFlip){
     verts.push([Math.cos(angle)*halfL, Math.sin(angle)*halfW]);
   }
   if(P.pk!==0) for(var i=0;i<verts.length;i++) verts[i][0]+=verts[i][1]*P.pk;
-  if(P.pz!==0){
-    var minX=Infinity,maxX=-Infinity;
-    for(var i=0;i<verts.length;i++){if(verts[i][0]<minX)minX=verts[i][0];if(verts[i][0]>maxX)maxX=verts[i][0]}
-    var rng=maxX-minX||1;
-    for(var i=0;i<verts.length;i++){
-      var t=(verts[i][0]-minX)/rng;
-      verts[i][1]*=(polFlip?(1-P.pz*(1-t)):(1-P.pz*t));
-    }
+  if(P.pz!==0) for(var i=0;i<verts.length;i++){
+    var t=(verts[i][0]+halfL)/(2*halfL);
+    verts[i][1]*=(polFlip?(1-P.pz*(1-t)):(1-P.pz*t));
+  }
+  if(P.pe!==0) for(var i=0;i<verts.length;i++){
+    verts[i][1]*=(1-P.pe*Math.min(1,Math.abs(verts[i][0])/halfL));
   }
   if(P.pi!==0){
     var ind=[],cA=0,cN=0;
@@ -798,6 +802,7 @@ function syncShapeSliders(){
   $('pn').value=P.pn;$('pnv').textContent=Math.round(P.pn);
   $('pk').value=P.pk;$('pkv').textContent=P.pk.toFixed(2);
   $('pi').value=P.pi;$('piv').textContent=P.pi.toFixed(2);
+  $('pe').value=P.pe;$('pev').textContent=P.pe.toFixed(2);
   $('pz').value=P.pz;$('pzv').textContent=P.pz.toFixed(2);
   $('pr').value=P.pr;$('prv').textContent=Math.round(P.pr);
 }
@@ -816,6 +821,13 @@ function updateReadouts(){
 function updBtns(){
   $('symb').querySelectorAll('button').forEach(function(b,i){b.className=P.sym===i?'on':''});
   $('shb').querySelectorAll('button').forEach(function(b){b.className=+b.dataset.v===P.sh?'on':''});
+  // Compare current params against each shape preset
+  var activePreset=-1;
+  for(var i=0;i<SHAPE_PRESETS.length;i++){
+    var s=SHAPE_PRESETS[i];
+    if(Math.round(P.pn)===s.pn&&P.pk===s.pk&&P.pi===s.pi&&P.pe===s.pe&&P.pz===s.pz&&P.pr===s.pr){activePreset=i;break}
+  }
+  $('psb').querySelectorAll('button').forEach(function(b,i){b.className=i===activePreset?'on':''});
 }
 
 // --- Symmetry buttons ---
@@ -824,6 +836,28 @@ function updBtns(){
     var b=document.createElement('button');b.textContent=l;
     b.onclick=function(){P.sym=i;updBtns();regenerate()};
     $('symb').appendChild(b);
+  });
+})();
+
+// --- Piece shape presets ---
+var SHAPE_PRESETS=[
+  {l:'bar',    pn:4,pk:0,pi:0,pe:0,pz:0,pr:0},
+  {l:'diamond',pn:4,pk:0,pi:0,pe:1,pz:0,pr:0},
+  {l:'hex',    pn:6,pk:0,pi:0,pe:0,pz:0,pr:0},
+  {l:'arrow',  pn:3,pk:0,pi:0,pe:0.5,pz:0,pr:0},
+  {l:'chevron',pn:4,pk:0,pi:-0.5,pe:0.5,pz:0,pr:0},
+  {l:'hourglass',pn:4,pk:0,pi:0,pe:0,pz:0,pr:0}
+];
+
+// --- Piece shape buttons ---
+(function(){
+  SHAPE_PRESETS.forEach(function(s,i){
+    var b=document.createElement('button');b.textContent=s.l;b.dataset.idx=i;
+    b.onclick=function(){
+      P.pn=s.pn;P.pk=s.pk;P.pi=s.pi;P.pe=s.pe;P.pz=s.pz;P.pr=s.pr;
+      syncShapeSliders();updBtns();rerender();
+    };
+    $('psb').appendChild(b);
   });
 })();
 
@@ -871,10 +905,10 @@ function resetCorners(){
   throttledRerender();
 }
 function resetDefaults(){
-  var defaults={sym:0,as:4,wd:0.88,ht:0.85,pz:0.25,ga:0,sp:0,rn:0,bg:'#ffffff',sc:0,gr:4,sh:6,pn:4,pk:0,pi:0,pr:0,lk:0};
+  var defaults={sym:0,as:4,wd:0.88,ht:0.85,pz:0.25,ga:0,sp:0,rn:0,bg:'#ffffff',sc:0,gr:4,sh:6,pn:4,pk:0,pi:0,pe:0,pr:0,lk:0};
   Object.keys(defaults).forEach(function(k){P[k]=defaults[k]});
   P.rc=[1,1,1,1];
-  var sliders={wd:'wd',ht:'ht',ga:'ga',sp:'sp',pz:'pz',rn:'rn',as:'as',sc:'sc',gr:'gr',pn:'pn',pk:'pk',pi:'pi',pr:'pr'};
+  var sliders={wd:'wd',ht:'ht',ga:'ga',sp:'sp',pz:'pz',rn:'rn',as:'as',sc:'sc',gr:'gr',pn:'pn',pk:'pk',pi:'pi',pe:'pe',pr:'pr'};
   Object.keys(sliders).forEach(function(k){var el=$(sliders[k]);if(el)el.value=P[k]});
   syncShapeSliders();
   resetCorners();setAllCorners();
@@ -957,7 +991,7 @@ function bulkExportIndividual(){
 function copySeed(){
   if(!allIcons.length)return;
   var icon=allIcons[selectedIdx];
-  var info='Seed: '+icon.seed+' | Sym: '+['6-fold','3-mirror','3-flip','dihedral','2-mirror','3-fold','2-fold','mirror'][P.sym]+' | Sides: '+Math.round(P.pn)+' | Skew: '+P.pk.toFixed(2)+' | Indent: '+P.pi.toFixed(2)+' | Trapeze: '+P.pz.toFixed(2)+' | Rotate: '+P.pr+' | Shape: '+(P.sh>=36?'circle':P.sh)+' | Grid: '+P.gr+' | Arm: '+P.as+' | Scatter: '+P.sc+' | Total: '+totalPieces()+' | Width: '+P.wd+' | Height: '+P.ht+' | Gap: '+P.ga+' | Spacing: '+P.sp;
+  var info='Seed: '+icon.seed+' | Sym: '+['6-fold','3-mirror','3-flip','dihedral','2-mirror','3-fold','2-fold','mirror'][P.sym]+' | Sides: '+Math.round(P.pn)+' | Skew: '+P.pk.toFixed(2)+' | Indent: '+P.pi.toFixed(2)+' | Point: '+P.pe.toFixed(2)+' | Trapeze: '+P.pz.toFixed(2)+' | Rotate: '+P.pr+' | Shape: '+(P.sh>=36?'circle':P.sh)+' | Grid: '+P.gr+' | Arm: '+P.as+' | Scatter: '+P.sc+' | Total: '+totalPieces()+' | Width: '+P.wd+' | Height: '+P.ht+' | Gap: '+P.ga+' | Spacing: '+P.sp;
   navigator.clipboard.writeText(info).then(function(){
     $('seedInfo').textContent='Copied: '+info;
   });
@@ -995,17 +1029,22 @@ function loadPreset(preset){
   // Backward compat: map old taper to trapeze
   if(P.ta!==undefined){P.pz=P.ta;delete P.ta}
   if(P.pp!==undefined){delete P.pp}
+  // Backward compat: map old P.ps integer to parametric values
+  if(typeof P.ps==='number'&&P.ps>=0&&P.ps<SHAPE_PRESETS.length){
+    var sp=SHAPE_PRESETS[P.ps];
+    P.pn=sp.pn;P.pk=sp.pk;P.pi=sp.pi;P.pe=sp.pe;P.pz=sp.pz;P.pr=sp.pr;
+  }
   delete P.ps;
-  delete P.pe;
   // Ensure parametric shape params have defaults
   if(P.pn===undefined)P.pn=4;
   if(P.pk===undefined)P.pk=0;
   if(P.pi===undefined)P.pi=0;
+  if(P.pe===undefined)P.pe=0;
   if(P.pz===undefined)P.pz=0.25;
   if(P.pr===undefined)P.pr=0;
   if(P.lk===undefined)P.lk=0;
   // Sync slider values
-  var sliders={wd:'wd',ht:'ht',ga:'ga',sp:'sp',pz:'pz',rn:'rn',as:'as',sc:'sc',gr:'gr',pn:'pn',pk:'pk',pi:'pi',pr:'pr'};
+  var sliders={wd:'wd',ht:'ht',ga:'ga',sp:'sp',pz:'pz',rn:'rn',as:'as',sc:'sc',gr:'gr',pn:'pn',pk:'pk',pi:'pi',pe:'pe',pr:'pr'};
   Object.keys(sliders).forEach(function(k){
     var el=$(sliders[k]);
     if(el)el.value=P[k];

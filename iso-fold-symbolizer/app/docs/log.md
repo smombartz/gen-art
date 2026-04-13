@@ -1,5 +1,62 @@
 # Change Log
 
+## 2026-04-13 - Removed side-count buttons, moved Sides slider to top of Shape section
+
+**What Changed:**
+- Removed the `3 4 5 6 7 8` button row, its container (`#psb`), the `SIDE_OPTIONS` builder, and its highlight branch in `updBtns`
+- Moved the Sides slider (`#pn`) above Width as the first control in the Shape section
+
+**Why:**
+- The slider already covers side-count selection; the buttons were redundant. Promoting Sides to the top reflects that it's the primary shape decision.
+
+**Files Modified:**
+- `iso-icon-generator.html`
+
+---
+
+## 2026-04-13 - Replaced shape preset buttons with side-count buttons
+
+**What Changed:**
+- Removed `SHAPE_PRESETS` (bar/diamond/hex/arrow/chevron/hourglass) and the legacy `P.ps` migration in `loadRecipe`
+- Replaced with numeric buttons `3 4 5 6 7 8` that set only `P.pn` (polygon side count), leaving other shape params (skew/indent/trapeze/rotate) untouched
+- Active-button highlight now matches `P.pn` directly via `dataset.sides`
+
+**Why:**
+- Named presets bundled multiple parameters and overlapped with what the existing sliders already control; pure side-count buttons give a clearer mental model
+
+**Files Modified:**
+- `iso-icon-generator.html`
+
+---
+
+## 2026-04-13 - Trapeze now collapses to a true point at 1.0
+
+**What Changed:**
+- `pieceVerts()` trapeze step normalizes `t` against the actual vertex x-range (`minX`/`maxX`) instead of `±halfL`
+
+**Why:**
+- Polygons with the `+π/n` angle offset don't reach `x=±halfL` (e.g. a square's vertices sit at `x≈±0.707*halfL`), so the old formula left a flat edge at `pz=1.0` instead of converging to a point
+
+**Files Modified:**
+- `iso-icon-generator.html`
+
+---
+
+## 2026-04-13 - Removed Point feature
+
+**What Changed:**
+- Removed the "Point" piece-shape control (parameter `P.pe`) from UI, state, transform pipeline, info string, presets, and persistence
+- Migration: `loadRecipe` now drops any incoming `pe` field via `delete P.pe`
+- Shape presets `diamond`, `arrow`, `chevron` had `pe` stripped (their stored `pe` values are no longer applied — these presets will look different until reauthored)
+
+**Why:**
+- Point and Trapeze produced visually equivalent results on opposite sides; the redundancy added control surface without distinct utility
+
+**Files Modified:**
+- `iso-icon-generator.html`
+
+---
+
 ## 2026-04-10 - Bulk export feature
 
 **What Changed:**
