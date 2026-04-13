@@ -10,17 +10,14 @@
 body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:#f5f5f0;color:#1a1a1a;padding:0}
 .wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
 .preview{flex:1;min-width:380px;margin-right:16px;padding-top:16px}
-.preview-header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-.title{font-size:16px;font-weight:700;letter-spacing:-0.01em;color:#1a1a1a;margin:0}
-.header-meta{font-size:12px;color:#aaa;white-space:nowrap}
-.preview-header .seed-display{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.header-actions{display:flex;gap:6px;margin-left:auto}
-.gen{padding:8px 16px;font-size:13px;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:8px;cursor:pointer;transition:background .15s;white-space:nowrap}
+.title{font-size:16px;font-weight:700;letter-spacing:-0.01em;margin-bottom:10px;color:#1a1a1a}
+.btn-row{display:flex;gap:8px;margin-bottom:12px}
+.gen{padding:10px 20px;font-size:15px;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:10px;cursor:pointer;flex:1;transition:background .15s}
 .gen:hover{background:#1d4ed8}
 .gen:active{transform:scale(0.98)}
 .gen.reset{background:#fff;color:#666;border-color:#ddd;flex:0 0 auto}
 .gen.reset:hover{background:#f0f0ec}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--icon-size,160px),1fr));gap:8px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--icon-size,90px),1fr));gap:8px;margin-bottom:12px}
 .grid-item{border-radius:12px;border:2px solid transparent;padding:2px;display:flex;align-items:center;justify-content:center;aspect-ratio:1;cursor:pointer;position:relative;transition:border-color .15s}
 .grid-item svg{width:100%;height:100%}
 .grid-item:hover{border-color:#999}
@@ -67,17 +64,14 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <body>
 <div class="wrap">
 <div class="preview">
-<div class="preview-header">
 <h1 class="title">Iso Icon Generator</h1>
-<span class="header-meta"><span id="uvv" style="font-size:12px;color:#aaa">—</span> unique</span>
-<span class="seed-display" id="seedInfo"></span>
-<div class="header-actions">
+<div class="btn-row">
 <button class="gen" onclick="generateBatch()">Generate</button>
 <button class="gen reset" onclick="resetDefaults()">Reset</button>
 </div>
-</div>
 <div class="grid" id="grid"></div>
-<button class="gen" onclick="loadMore()" id="loadMore" style="background:#fff;color:#1a1a1a;border-color:#ccc;width:100%">Load more</button>
+<button class="gen" onclick="loadMore()" id="loadMore" style="background:#fff;color:#1a1a1a;border-color:#ccc">Load 50 more</button>
+<div class="seed-display" id="seedInfo"></div>
 </div>
 <div class="toolbar">
 
@@ -97,13 +91,14 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <div class="s"><div class="r"><label title="Additional pieces placed randomly (not connected to the arm)">Scatter</label><span id="scv">0</span></div>
 <input type="range" min="0" max="20" step="1" value="0" id="sc" oninput="P.sc=+this.value;updPieces();throttledRegenerate()"></div>
 
-<div class="s"><div class="r"><label title="Radius of the triangular lattice (larger = more room for pieces)">Grid size</label><span id="grv">4</span></div>
-<input type="range" min="2" max="7" step="1" value="4" id="gr" oninput="P.gr=+this.value;$('grv').textContent=P.gr;throttledRegenerate()"></div>
+<div class="s"><div class="r"><label title="Radius of the triangular lattice (larger = more room for pieces)">Grid size</label><span id="grv">5</span></div>
+<input type="range" min="2" max="7" step="1" value="5" id="gr" oninput="P.gr=+this.value;$('grv').textContent=P.gr;throttledRegenerate()"></div>
 
-<div class="s"><div class="r"><label title="Size of each icon in the preview grid">Icon size</label><span id="isv">160</span></div>
-<input type="range" min="50" max="200" step="5" value="160" id="is" oninput="document.querySelector('.grid').style.setProperty('--icon-size',this.value+'px');$('isv').textContent=this.value"></div>
+<div class="s"><div class="r"><label title="Size of each icon in the preview grid">Icon size</label><span id="isv">90</span></div>
+<input type="range" min="50" max="200" step="5" value="90" id="is" oninput="document.querySelector('.grid').style.setProperty('--icon-size',this.value+'px');$('isv').textContent=this.value"></div>
 
 <div class="s"><div class="r"><label>Total pieces</label><span id="tpv">4</span></div></div>
+<div class="s"><div class="r"><label>Unique variations</label><span id="uvv" style="font-size:12px;color:#aaa">—</span></div></div>
 </details>
 
 <details class="section" open>
@@ -143,8 +138,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <div class="s"><div class="r"><label title="Rotate the piece shape in degrees">Rotate</label><span id="prv">0</span></div>
 <input type="range" min="0" max="360" step="1" value="0" id="pr" oninput="P.pr=+this.value;$('prv').textContent=this.value;throttledRerender()"></div>
 
-<div class="s"><div class="r"><label title="Corner rounding (0-0.5) then morph toward ellipse (0.5-1.0)">Rounding</label><div style="display:flex;align-items:center;gap:6px"><button id="pcBtn" title="Toggle per-corner rounding" style="font-size:10px;padding:1px 6px;border:1px solid #ccc;background:#fff;border-radius:4px;cursor:pointer;color:#999" onclick="toggleCornerSliders()">corners</button><span id="rv">0</span></div></div>
-<input type="range" min="0" max="1" step="0.01" value="0" id="rn" oninput="P.rn=+this.value;throttledRerender()"></div>
+<div class="s"><div class="r"><label title="Corner rounding (0-0.5) then morph toward ellipse (0.5-1.0)">Rounding</label><span id="rv">0</span></div>
+<input type="range" min="0" max="1" step="0.01" value="0" id="rn" oninput="P.rn=+this.value;setAllCorners();throttledRerender()"></div>
 
 <div class="s" id="cornerSliders" style="display:none;margin-left:8px">
 <div class="r" style="margin-bottom:4px"><label style="font-size:11px;color:#999">Per corner</label>
@@ -178,15 +173,6 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <button onclick="downloadSVG()">Download SVG</button>
 <button onclick="copySeed()">Copy seed</button>
 </div>
-<div style="margin-top:8px;padding-top:8px;border-top:1px solid #e8e8e4">
-<div class="r" style="margin-bottom:6px"><label style="font-size:11px;color:#999">Bulk export</label></div>
-<div style="display:flex;gap:5px;align-items:center">
-<input type="number" id="bulkCount" value="20" min="1" max="500" style="width:60px;font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:6px;outline:none;text-align:center">
-<button class="top" style="padding:4px 10px;font-size:12px;border:1px solid #ccc;background:#fff;border-radius:6px;cursor:pointer;white-space:nowrap" onclick="bulkExportGrid()">Grid SVG</button>
-<button class="top" style="padding:4px 10px;font-size:12px;border:1px solid #ccc;background:#fff;border-radius:6px;cursor:pointer;white-space:nowrap" onclick="bulkExportIndividual()">Individual SVGs</button>
-</div>
-<div id="bulkStatus" style="font-size:11px;color:#999;margin-top:4px"></div>
-</div>
 </details>
 
 <details class="section">
@@ -202,8 +188,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 </div>
 
 <script>
-var P={sym:0,as:4,wd:0.88,ht:0.85,pz:0.25,ga:0,sp:0,rn:0,rc:[1,1,1,1],bg:'#ffffff',sc:0,gr:4,sh:6,pn:4,pk:0,pi:0,pe:0,pr:0,lk:0};
-var BATCH=20;
+var P={sym:0,as:4,wd:0.88,ht:0.85,pz:0.25,ga:0,sp:0,rn:0,rc:[1,1,1,1],bg:'#ffffff',sc:0,gr:5,sh:6,pn:4,pk:0,pi:0,pe:0,pr:0,lk:0};
+var BATCH=50;
 function totalPieces(){return P.as+P.sc}
 var allIcons=[];
 var allSeeds=[];
@@ -478,24 +464,21 @@ function iconToSVG(icon,sz,bgColor,showGrid){
   var ak=Object.keys(icon.edges);
   var vx,vy,fullDim;
 
-  // Pre-compute all plank points once (avoids double computation for bounds+render)
-  var allPts={};
-  ak.forEach(function(k){
-    var e=parseEKey(k);
-    allPts[k]=plankPts(e.q1,e.r1,e.q2,e.r2,icon.pol);
-  });
-
   if(showGrid){
+    // Fixed viewBox snug around hex outline
     var R=P.gr;
-    var gridW=S*R;
-    var gridH=S*R*0.866;
+    var gridW=S*R;         // max x extent of hex = S*R
+    var gridH=S*R*0.866;   // max y extent of hex
     var pad=4;
     fullDim=Math.max((gridW+pad)*2,(gridH+pad)*2);
     vx=-fullDim/2;vy=-fullDim/2;
   } else {
+    // Tight viewBox around pieces
     var mnX=1e9,mxX=-1e9,mnY=1e9,mxY=-1e9;
     ak.forEach(function(k){
-      allPts[k].forEach(function(p){if(p[0]<mnX)mnX=p[0];if(p[0]>mxX)mxX=p[0];if(p[1]<mnY)mnY=p[1];if(p[1]>mxY)mxY=p[1]});
+      var e=parseEKey(k);
+      var pts=plankPts(e.q1,e.r1,e.q2,e.r2,icon.pol);
+      pts.forEach(function(p){if(p[0]<mnX)mnX=p[0];if(p[0]>mxX)mxX=p[0];if(p[1]<mnY)mnY=p[1];if(p[1]>mxY)mxY=p[1]});
     });
     if(!ak.length){mnX=0;mxX=sz;mnY=0;mxY=sz}
     var pad=8;mnX-=pad;mnY-=pad;mxX+=pad;mxY+=pad;
@@ -511,7 +494,8 @@ function iconToSVG(icon,sz,bgColor,showGrid){
   if(showGrid) parts.push(gridSVG());
 
   ak.forEach(function(k){
-    var pts=allPts[k];
+    var e=parseEKey(k);
+    var pts=plankPts(e.q1,e.r1,e.q2,e.r2,icon.pol);
     if(P.sp>0) pts=insetPoly(pts,P.sp);
     if(P.rn>0){
       var cornerAmt=Math.min(P.rn,0.5)/0.5; // 0→1 over P.rn 0→0.5
@@ -544,59 +528,12 @@ function iconToSVG(icon,sz,bgColor,showGrid){
         segs.push(i===0?'M':'L',(cur[0]+d1x/l1*rr).toFixed(1),',',(cur[1]+d1y/l1*rr).toFixed(1),
           'Q',cur[0].toFixed(1),',',cur[1].toFixed(1),' ',(cur[0]+d2x/l2*rr).toFixed(1),',',(cur[1]+d2y/l2*rr).toFixed(1));
       }
-      parts.push('<path d="',segs.join(''),'Z" fill="#1a1a1a"/>');
+      parts.push('<path d="',segs.join(''),'Z" fill="#1a1a1a"'/>');
     } else {
-      parts.push('<polygon points="',pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' '),'" fill="#1a1a1a"/>');
+      parts.push('<polygon points="',pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' '),'" fill="#1a1a1a"'/>');
     }
   });
   return parts.join('')+'</svg>';
-}
-
-// --- Shared parametric shape pipeline (local coords) ---
-function pieceVerts(halfL,halfW,polFlip){
-  var n=Math.round(P.pn);if(n<3)n=3;
-  var verts=[];
-  for(var i=0;i<n;i++){
-    var angle=2*Math.PI*i/n-Math.PI/2+Math.PI/n;
-    verts.push([Math.cos(angle)*halfL, Math.sin(angle)*halfW]);
-  }
-  if(P.pk!==0) for(var i=0;i<verts.length;i++) verts[i][0]+=verts[i][1]*P.pk;
-  if(P.pz!==0) for(var i=0;i<verts.length;i++){
-    var t=(verts[i][0]+halfL)/(2*halfL);
-    verts[i][1]*=(polFlip?(1-P.pz*(1-t)):(1-P.pz*t));
-  }
-  if(P.pe!==0) for(var i=0;i<verts.length;i++){
-    verts[i][1]*=(1-P.pe*Math.min(1,Math.abs(verts[i][0])/halfL));
-  }
-  if(P.pi!==0){
-    var ind=[],cA=0,cN=0;
-    for(var j=0;j<verts.length;j++){cA+=verts[j][0];cN+=verts[j][1]}
-    cA/=verts.length;cN/=verts.length;
-    for(var i=0;i<verts.length;i++){
-      var v0=verts[i],v1=verts[(i+1)%verts.length];
-      ind.push(v0);
-      var mA=(v0[0]+v1[0])/2,mN=(v0[1]+v1[1])/2;
-      var eA=v1[0]-v0[0],eN=v1[1]-v0[1],eL=Math.sqrt(eA*eA+eN*eN);
-      if(eL>0.01){
-        var tA=cA-mA,tN=cN-mN,tD=Math.sqrt(tA*tA+tN*tN);
-        if(tD>0.01){tA/=tD;tN/=tD;ind.push([mA+tA*eL*0.3*P.pi,mN+tN*eL*0.3*P.pi])}
-        else ind.push([mA,mN]);
-      }
-    }
-    verts=ind;
-  }
-  if(P.pr!==0){
-    var rad=P.pr*Math.PI/180,cosR=Math.cos(rad),sinR=Math.sin(rad);
-    var rcx=0,rcy=0;
-    for(var i=0;i<verts.length;i++){rcx+=verts[i][0];rcy+=verts[i][1]}
-    rcx/=verts.length;rcy/=verts.length;
-    for(var i=0;i<verts.length;i++){
-      var dx=verts[i][0]-rcx,dy=verts[i][1]-rcy;
-      verts[i][0]=rcx+dx*cosR-dy*sinR;
-      verts[i][1]=rcy+dx*sinR+dy*cosR;
-    }
-  }
-  return verts;
 }
 
 function plankPts(q1,r1,q2,r2,pol){
@@ -611,16 +548,107 @@ function plankPts(q1,r1,q2,r2,pol){
   if(halfL<2)halfL=2;
   var polNode1=pol[nKey(q1,r1)]===1;
 
+  // Gap: offset midpoint outward from grid origin along edge axis
   var cx=(p1x+p2x)/2,cy=(p1y+p2y)/2;
   var odist=Math.sqrt(cx*cx+cy*cy);
   var ox=odist>0?cx/odist*P.ga:0,oy=odist>0?cy/odist*P.ga:0;
   var mx=cx+ox,my=cy+oy;
+  // Helper: point at (along, across) from midpoint
   function mkpt(a,n){return[mx+ux*a+nx*n,my+uy*a+ny*n]}
-  function tag(arr){arr._mx=mx;arr._my=my;arr._ux=ux;arr._uy=uy;arr._nx=nx;arr._ny=ny;arr._halfL=halfL;arr._avgW=halfW;return arr}
+  // Attach local frame for ellipse rendering
+  var avgW=halfW;
+  function tag(arr){arr._mx=mx;arr._my=my;arr._ux=ux;arr._uy=uy;arr._nx=nx;arr._ny=ny;arr._halfL=halfL;arr._avgW=avgW;return arr}
 
-  var verts=pieceVerts(halfL,halfW,polNode1);
+  // --- Parametric shape pipeline ---
+  var n=Math.round(P.pn);
+  if(n<3)n=3;
+
+  // 1. Generate base n-gon in local coords (along, across)
+  var verts=[];
+  for(var i=0;i<n;i++){
+    var angle=2*Math.PI*i/n-Math.PI/2+Math.PI/n;
+    var rawA=Math.cos(angle); // -1 to 1 along edge axis
+    var rawN=Math.sin(angle); // -1 to 1 across edge axis
+    verts.push([rawA*halfL, rawN*halfW]);
+  }
+
+  // 2. Apply skew
+  if(P.pk!==0){
+    for(var i=0;i<verts.length;i++){
+      verts[i][0]+=verts[i][1]*P.pk;
+    }
+  }
+
+  // 3. Apply trapeze (polarity-aware taper)
+  if(P.pz!==0){
+    for(var i=0;i<verts.length;i++){
+      var t=(verts[i][0]+halfL)/(2*halfL); // 0 at left end, 1 at right end
+      var factor=polNode1 ? (1-P.pz*t) : (1-P.pz*(1-t));
+      verts[i][1]*=factor;
+    }
+  }
+
+  // 4. Apply point/end sharpening
+  if(P.pe!==0){
+    for(var i=0;i<verts.length;i++){
+      var endProximity=Math.min(1,Math.abs(verts[i][0])/halfL);
+      verts[i][1]*=(1-P.pe*endProximity);
+    }
+  }
+
+  // 5. Apply indent (insert offset midpoints between vertices)
+  if(P.pi!==0){
+    var indented=[];
+    for(var i=0;i<verts.length;i++){
+      var v0=verts[i];
+      var v1=verts[(i+1)%verts.length];
+      indented.push(v0);
+      // Midpoint between v0 and v1
+      var midA=(v0[0]+v1[0])/2;
+      var midN=(v0[1]+v1[1])/2;
+      // Edge vector
+      var eA=v1[0]-v0[0];
+      var eN=v1[1]-v0[1];
+      var eLen=Math.sqrt(eA*eA+eN*eN);
+      if(eLen>0.01){
+        // Polygon centroid
+        var cA=0,cN=0;
+        for(var j=0;j<verts.length;j++){cA+=verts[j][0];cN+=verts[j][1]}
+        cA/=verts.length;cN/=verts.length;
+        // Direction from midpoint toward centroid
+        var toCA=cA-midA,toCN=cN-midN;
+        var toCD=Math.sqrt(toCA*toCA+toCN*toCN);
+        if(toCD>0.01){
+          toCA/=toCD;toCN/=toCD;
+          var offset=eLen*0.3*P.pi;
+          indented.push([midA+toCA*offset, midN+toCN*offset]);
+        } else {
+          indented.push([midA,midN]);
+        }
+      }
+    }
+    verts=indented;
+  }
+
+  // 6. Apply rotate
+  if(P.pr!==0){
+    var rad=P.pr*Math.PI/180;
+    var cosR=Math.cos(rad),sinR=Math.sin(rad);
+    var rcx=0,rcy=0;
+    for(var i=0;i<verts.length;i++){rcx+=verts[i][0];rcy+=verts[i][1]}
+    rcx/=verts.length;rcy/=verts.length;
+    for(var i=0;i<verts.length;i++){
+      var dx=verts[i][0]-rcx,dy=verts[i][1]-rcy;
+      verts[i][0]=rcx+dx*cosR-dy*sinR;
+      verts[i][1]=rcy+dx*sinR+dy*cosR;
+    }
+  }
+
+  // 7. Convert to global coords
   var pts=[];
-  for(var i=0;i<verts.length;i++) pts.push(mkpt(verts[i][0],verts[i][1]));
+  for(var i=0;i<verts.length;i++){
+    pts.push(mkpt(verts[i][0],verts[i][1]));
+  }
   return tag(pts);
 }
 
@@ -632,26 +660,23 @@ function iconFingerprint(icon){
 }
 
 var _countTimer=0;
-var _countRaf=0;
 function countVariations(){
   clearTimeout(_countTimer);
-  if(_countRaf){cancelAnimationFrame(_countRaf);_countRaf=0}
   $('uvv').textContent='counting…';
   _countTimer=setTimeout(function(){
-    var seen={},unique=0,stale=0,i=0,maxSamples=5000,chunkSize=200;
-    function chunk(){
-      var end=Math.min(i+chunkSize,maxSamples);
-      for(;i<end;i++){
-        var seed=Math.floor(Math.random()*2147483647);
-        var icon=generateIcon(seed);
-        var fp=iconFingerprint(icon);
-        if(!seen[fp]){seen[fp]=1;unique++;stale=0}
-        else{stale++;if(stale>500){$('uvv').textContent=unique;return}}
-      }
-      if(i<maxSamples){_countRaf=requestAnimationFrame(chunk)}
-      else{$('uvv').textContent=unique+'+'}
+    var seen={};
+    var unique=0;
+    var maxSamples=5000;
+    var stale=0;
+    for(var i=0;i<maxSamples;i++){
+      var seed=Math.floor(Math.random()*2147483647);
+      var icon=generateIcon(seed);
+      var fp=iconFingerprint(icon);
+      if(!seen[fp]){seen[fp]=1;unique++;stale=0}
+      else{stale++;if(stale>500)break}// stop if 500 consecutive dupes
     }
-    _countRaf=requestAnimationFrame(chunk);
+    var exact=stale>500;
+    $('uvv').textContent=exact?unique:unique+'+'
   },500);
 }
 
@@ -766,11 +791,59 @@ function rerender(){
 
 function renderShapePreview(){
   var sz=80,pad=6;
-  var ratio=P.wd/P.ht,maxR=(sz-pad*2)/2;
+  // Use actual width/height proportions
+  var ratio=P.wd/P.ht;
+  var maxR=(sz-pad*2)/2;
   var halfL,halfW;
-  if(ratio>1){halfW=maxR;halfL=maxR/ratio}else{halfL=maxR;halfW=maxR*ratio}
-  var verts=pieceVerts(halfL,halfW,false);
-  var pts=verts.map(function(v){return[v[0]+sz/2,v[1]+sz/2]});
+  if(ratio>1){halfW=maxR;halfL=maxR/ratio}
+  else{halfL=maxR;halfW=maxR*ratio}
+  var n=Math.round(P.pn);if(n<3)n=3;
+  var verts=[];
+  for(var i=0;i<n;i++){
+    var ang=2*Math.PI*i/n-Math.PI/2+Math.PI/n;
+    verts.push([Math.cos(ang)*halfL, Math.sin(ang)*halfW]);
+  }
+  if(P.pk!==0) for(var i=0;i<verts.length;i++) verts[i][0]+=verts[i][1]*P.pk;
+  if(P.pz!==0) for(var i=0;i<verts.length;i++){
+    var t=(verts[i][0]+halfL)/(2*halfL);
+    verts[i][1]*=(1-P.pz*t);
+  }
+  if(P.pe!==0) for(var i=0;i<verts.length;i++){
+    var ep=Math.min(1,Math.abs(verts[i][0])/halfL);
+    verts[i][1]*=(1-P.pe*ep);
+  }
+  if(P.pi!==0){
+    var ind=[];
+    for(var i=0;i<verts.length;i++){
+      var v0=verts[i],v1=verts[(i+1)%verts.length];
+      ind.push(v0);
+      var mA=(v0[0]+v1[0])/2,mN=(v0[1]+v1[1])/2;
+      var eA=v1[0]-v0[0],eN=v1[1]-v0[1],eL=Math.sqrt(eA*eA+eN*eN);
+      if(eL>0.01){
+        var cA=0,cN=0;
+        for(var j=0;j<verts.length;j++){cA+=verts[j][0];cN+=verts[j][1]}
+        cA/=verts.length;cN/=verts.length;
+        var tA=cA-mA,tN=cN-mN,tD=Math.sqrt(tA*tA+tN*tN);
+        if(tD>0.01){tA/=tD;tN/=tD;ind.push([mA+tA*eL*0.3*P.pi,mN+tN*eL*0.3*P.pi])}
+        else ind.push([mA,mN]);
+      }
+    }
+    verts=ind;
+  }
+  if(P.pr!==0){
+    var rad=P.pr*Math.PI/180,cosR=Math.cos(rad),sinR=Math.sin(rad);
+    var rcx=0,rcy=0;
+    for(var i=0;i<verts.length;i++){rcx+=verts[i][0];rcy+=verts[i][1]}
+    rcx/=verts.length;rcy/=verts.length;
+    for(var i=0;i<verts.length;i++){
+      var dx=verts[i][0]-rcx,dy=verts[i][1]-rcy;
+      verts[i][0]=rcx+dx*cosR-dy*sinR;
+      verts[i][1]=rcy+dx*sinR+dy*cosR;
+    }
+  }
+  // Convert to SVG coords centered in box
+  var pts=verts.map(function(v){return[v[0]+sz/2, v[1]+sz/2]});
+  // Render with rounding if active
   var svg;
   if(P.rn>0){
     var cornerAmt=Math.min(P.rn,0.5)/0.5;
@@ -890,22 +963,16 @@ function onHeightChange(v){
   throttledRerender();
 }
 
-var _cornersVisible=false;
-function toggleCornerSliders(){
-  _cornersVisible=!_cornersVisible;
-  $('cornerSliders').style.display=_cornersVisible?'block':'none';
-  $('pcBtn').style.background=_cornersVisible?'var(--accent)':'#fff';
-  $('pcBtn').style.color=_cornersVisible?'#fff':'#999';
-  $('pcBtn').style.borderColor=_cornersVisible?'var(--accent)':'#ccc';
+function setAllCorners(){
+  $('cornerSliders').style.display=P.rn>0?'block':'none';
 }
-function setAllCorners(){}
 function resetCorners(){
   P.rc=[1,1,1,1];
   for(var i=1;i<=4;i++){$('rc'+i).value=1;$('rc'+i+'v').textContent='1.00'}
   throttledRerender();
 }
 function resetDefaults(){
-  var defaults={sym:0,as:4,wd:0.88,ht:0.85,pz:0.25,ga:0,sp:0,rn:0,bg:'#ffffff',sc:0,gr:4,sh:6,pn:4,pk:0,pi:0,pe:0,pr:0,lk:0};
+  var defaults={sym:0,as:4,wd:0.88,ht:0.85,pz:0.25,ga:0,sp:0,rn:0,bg:'#ffffff',sc:0,gr:5,sh:6,pn:4,pk:0,pi:0,pe:0,pr:0,lk:0};
   Object.keys(defaults).forEach(function(k){P[k]=defaults[k]});
   P.rc=[1,1,1,1];
   var sliders={wd:'wd',ht:'ht',ga:'ga',sp:'sp',pz:'pz',rn:'rn',as:'as',sc:'sc',gr:'gr',pn:'pn',pk:'pk',pi:'pi',pe:'pe',pr:'pr'};
@@ -933,59 +1000,6 @@ function downloadSVG(){
   a.href=URL.createObjectURL(blob);
   a.download='iso-icon-'+icon.seed+'.svg';
   a.click();
-}
-
-function bulkExportGrid(){
-  var count=Math.max(1,Math.min(500,+$('bulkCount').value||20));
-  $('bulkStatus').textContent='Generating '+count+' variations…';
-  setTimeout(function(){
-    var seeds=generateUniqueSeeds(count);
-    var icons=seeds.map(function(s){return generateIcon(s)});
-    var iconSz=128,pad=8;
-    var cols=Math.ceil(Math.sqrt(count));
-    var rows=Math.ceil(count/cols);
-    var w=cols*(iconSz+pad)+pad,h=rows*(iconSz+pad)+pad;
-    var parts=['<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'">'];
-    parts.push('<rect width="'+w+'" height="'+h+'" fill="'+(P.bg==='#ffffff'?'#ffffff':P.bg)+'"/>');
-    for(var i=0;i<icons.length;i++){
-      var col=i%cols,row=Math.floor(i/cols);
-      var x=pad+col*(iconSz+pad),y=pad+row*(iconSz+pad);
-      var svg=iconToSVG(icons[i],iconSz,P.bg==='#ffffff'?'transparent':P.bg);
-      // Strip outer <svg> tag and embed as <g> with transform
-      var inner=svg.replace(/<svg[^>]*>/,'').replace(/<\/svg>/,'');
-      parts.push('<g transform="translate('+x+','+y+')">'+inner+'</g>');
-    }
-    parts.push('</svg>');
-    var blob=new Blob([parts.join('')],{type:'image/svg+xml'});
-    var a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download='iso-icons-grid-'+count+'.svg';
-    a.click();
-    $('bulkStatus').textContent='Exported '+icons.length+' icons as grid SVG';
-  },50);
-}
-
-function bulkExportIndividual(){
-  var count=Math.max(1,Math.min(500,+$('bulkCount').value||20));
-  $('bulkStatus').textContent='Generating '+count+' variations…';
-  setTimeout(function(){
-    var seeds=generateUniqueSeeds(count);
-    var icons=seeds.map(function(s){return generateIcon(s)});
-    var bg=P.bg==='#ffffff'?'transparent':P.bg;
-    // Create combined HTML file with all SVGs for easy saving
-    var parts=['<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Iso Icons Export</title>'];
-    parts.push('<style>body{background:#f5f5f0;display:flex;flex-wrap:wrap;gap:8px;padding:16px}svg{background:#fff;border-radius:8px}</style></head><body>');
-    for(var i=0;i<icons.length;i++){
-      parts.push(iconToSVG(icons[i],256,bg));
-    }
-    parts.push('</body></html>');
-    var blob=new Blob([parts.join('')],{type:'text/html'});
-    var a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download='iso-icons-'+count+'.html';
-    a.click();
-    $('bulkStatus').textContent='Exported '+icons.length+' icons as HTML';
-  },50);
 }
 
 function copySeed(){

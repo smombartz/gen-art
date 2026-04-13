@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iso Icon Generator</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f5f5f0;color:#1a1a1a;padding:16px}
+.wrap{max-width:1100px;margin:0 auto;display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.left{flex:1;min-width:380px}
+.right{flex:0 0 260px;position:sticky;top:16px;align-self:flex-start}
+.gen{padding:10px 20px;font-size:15px;font-weight:600;border:1px solid #ccc;background:#fff;border-radius:10px;cursor:pointer;width:100%;margin-bottom:12px}
+.gen:hover{background:#eee}
+.gen:active{transform:scale(0.98)}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
+.grid-item{border-radius:12px;border:2px solid transparent;padding:2px;display:flex;align-items:center;justify-content:center;aspect-ratio:1;cursor:pointer;position:relative;transition:border-color .15s}
+.grid-item svg{width:100%;height:100%}
+.grid-item:hover{border-color:#999}
+.grid-item.selected{border-color:#1a1a1a}
+.grid-item .seed{position:absolute;bottom:4px;right:6px;font-size:9px;color:#aaa;font-family:monospace;opacity:0;transition:opacity .15s}
+.grid-item:hover .seed{opacity:1}
+.s{margin-bottom:11px}
+.s label{font-size:13px;color:#888;display:block;margin-bottom:3px}
+.s .r{display:flex;justify-content:space-between;align-items:center}
+.s .r span{font-size:13px;font-weight:600;min-width:36px;text-align:right}
+input[type=range]{width:100%;height:4px;-webkit-appearance:none;background:#ddd;border-radius:2px;outline:none;margin-top:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#1a1a1a;cursor:pointer}
+.bb{display:flex;gap:5px;flex-wrap:wrap}
+.bb button{font-size:12px;padding:4px 11px;border:1px solid #ccc;background:#fff;border-radius:6px;cursor:pointer;color:#1a1a1a;transition:all .1s}
+.bb button:hover{background:#eee}
+.bb button.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.sep{border:none;border-top:1px solid #e8e8e4;margin:12px 0}
+.seed-display{font-family:monospace;font-size:12px;color:#aaa;margin-top:4px}
+.top{display:flex;gap:6px;flex-wrap:wrap}
+.top button{padding:5px 10px;font-size:12px;font-weight:500;border:1px solid #ccc;background:#fff;border-radius:7px;cursor:pointer}
+.top button:hover{background:#eee}
+.preset-item{display:flex;align-items:center;gap:4px;margin-bottom:4px}
+.preset-item button{font-size:11px;padding:3px 8px;border:1px solid #ccc;background:#fff;border-radius:5px;cursor:pointer;color:#1a1a1a}
+.preset-item button:hover{background:#eee}
+.preset-item .preset-name{flex:1;font-size:12px;cursor:pointer;padding:3px 6px;border-radius:5px}
+.preset-item .preset-name:hover{background:#eee}
+.preset-item .del{color:#aaa;font-size:10px;padding:3px 5px;border-color:transparent}
+.preset-item .del:hover{color:#c33;background:transparent}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="left">
+<button class="gen" onclick="generateBatch()">Generate</button>
+<div class="grid" id="grid"></div>
+<button class="gen" onclick="loadMore()" id="loadMore">Load 50 more</button>
+<div class="seed-display" id="seedInfo"></div>
+</div>
+<div class="right">
+
+<div class="s"><label>Symmetry</label>
+<div class="bb" id="symb"></div></div>
+
+<div class="s"><label>Shape</label>
+<div class="bb" id="shb"></div></div>
+
+<div class="s"><div class="r"><label>Arm size</label><span id="asv">4</span></div>
+<input type="range" min="1" max="20" step="1" value="4" id="as" oninput="P.as=+this.value;updPieces();throttledRegenerate()"></div>
+
+<div class="s"><div class="r"><label>Scatter</label><span id="scv">0</span></div>
+<input type="range" min="0" max="20" step="1" value="0" id="sc" oninput="P.sc=+this.value;updPieces();throttledRegenerate()"></div>
+
+<div class="s"><div class="r"><label>Grid size</label><span id="grv">5</span></div>
+<input type="range" min="2" max="7" step="1" value="5" id="gr" oninput="P.gr=+this.value;$('grv').textContent=P.gr;throttledRegenerate()"></div>
+
+<div class="s"><div class="r"><label>Total pieces</label><span id="tpv">4</span></div></div>
+<div class="s"><div class="r"><label>Unique variations</label><span id="uvv" style="font-size:12px;color:#aaa">—</span></div></div>
+
+<div class="s"><label>Piece</label>
+<div class="bb" id="psb"></div></div>
+
+<hr class="sep">
+
+<div class="s"><div class="r"><label>Width</label><span id="wv">0.88</span></div>
+<input type="range" min="0.1" max="4.0" step="0.01" value="0.88" id="wd" oninput="P.wd=+this.value;throttledRerender()"></div>
+
+<div class="s"><div class="r"><label>Height</label><span id="hv">0.85</span></div>
+<input type="range" min="0.1" max="4.0" step="0.01" value="0.85" id="ht" oninput="P.ht=+this.value;throttledRerender()"></div>
+
+<div class="s"><div class="r"><label>Gap</label><span id="gv">0</span></div>
+<input type="range" min="-100" max="100" step="1" value="0" id="ga" oninput="P.ga=+this.value;throttledRerender()"></div>
+
+<div class="s"><div class="r"><label>Spacing</label><span id="spv">0</span></div>
+<input type="range" min="0" max="100" step="0.5" value="0" id="sp" oninput="P.sp=+this.value;throttledRerender()"></div>
+
+<div class="s"><div class="r"><label>Border</label><span id="bv">0</span></div>
+<input type="range" min="0" max="10" step="0.5" value="0" id="bd" oninput="P.bd=+this.value;throttledRerender()"></div>
+
+<div class="s"><div class="r"><label>Taper</label><span id="tv">0.25</span></div>
+<input type="range" min="0" max="1.0" step="0.01" value="0.25" id="ta" oninput="P.ta=+this.value;throttledRerender()"></div>
+
+<div class="s"><div class="r"><label>Rounding</label><span id="rv">0</span></div>
+<input type="range" min="0" max="1" step="0.01" value="0" id="rn" oninput="P.rn=+this.value;throttledRerender()"></div>
+
+<hr class="sep">
+
+<div class="top">
+<button id="cp" onclick="copySVG()">Copy SVG</button>
+<button onclick="copySeed()">Copy seed</button>
+</div>
+
+<hr class="sep">
+
+<div class="s"><label>Presets</label>
+<div style="display:flex;gap:5px;margin-bottom:6px">
+<input type="text" id="presetName" placeholder="Preset name" style="flex:1;font-size:12px;padding:4px 8px;border:1px solid #ccc;border-radius:6px;outline:none">
+<button class="top" style="padding:4px 10px;font-size:12px;border:1px solid #ccc;background:#fff;border-radius:6px;cursor:pointer;white-space:nowrap" onclick="savePreset()">Save</button>
+</div>
+<div id="presetList"></div>
+</div>
+
+</div>
+</div>
+
+<script>
+var P={sym:0,as:4,wd:0.88,ht:0.85,ta:0.25,ga:0,sp:0,bd:0,rn:0,bg:'#ffffff',sc:0,gr:5,sh:6,ps:0};
+var BATCH=50;
+function totalPieces(){return P.as+P.sc}
+var allIcons=[];
+var allSeeds=[];
+var selectedIdx=0;
+
+// RAF throttle for slider-driven renders
+var _rafRender=0,_rafRegen=0;
+function throttledRerender(){
+  if(_rafRender)return;
+  _rafRender=requestAnimationFrame(function(){_rafRender=0;rerender()});
+}
+function throttledRegenerate(){
+  if(_rafRegen)return;
+  _rafRegen=requestAnimationFrame(function(){_rafRegen=0;regenerate()});
+}
+
+function $(id){return document.getElementById(id)}
+
+// --- Seeded PRNG (mulberry32) ---
+function prng(seed){
+  return function(){
+    seed|=0;seed=seed+0x6D2B79F5|0;
+    var t=Math.imul(seed^seed>>>15,1|seed);
+    t=t+Math.imul(t^t>>>7,61|t)^t;
+    return((t^t>>>14)>>>0)/4294967296;
+  };
+}
+
+// --- Iso grid math ---
+var S=34;
+var H=S*0.866;
+var DIRS=[
+  {dq:1,dr:0},{dq:0,dr:1},{dq:-1,dr:1},
+  {dq:-1,dr:0},{dq:0,dr:-1},{dq:1,dr:-1}
+];
+
+function nKey(q,r){return q+','+r}
+function eKey(q1,r1,q2,r2){
+  var a=nKey(q1,r1),b=nKey(q2,r2);
+  return a<b?a+'|'+b:b+'|'+a;
+}
+function parseEKey(k){
+  var p=k.split('|'),a=p[0].split(',').map(Number),b=p[1].split(',').map(Number);
+  return{q1:a[0],r1:a[1],q2:b[0],r2:b[1]};
+}
+
+function rotNode(q,r,times){
+  for(var t=0;t<times;t++){var nq=-r,nr=q+r;q=nq;r=nr}
+  return{q:q,r:r};
+}
+function mirNode(q,r){return{q:-q-r,r:r}}
+
+// --- Shape boundary ---
+function shapeVerts(n,cr){
+  // Regular n-gon vertices, circumradius cr, first vertex at top
+  var pts=[];
+  for(var i=0;i<n;i++){
+    var a=2*Math.PI*i/n-Math.PI/2;
+    pts.push([cr*Math.cos(a),cr*Math.sin(a)]);
+  }
+  return pts;
+}
+function insideShape(x,y){
+  if(P.sh>=36) return x*x+y*y<=shapeCR*shapeCR; // circle
+  var n=P.sh,a=Math.atan2(y,x)+Math.PI/2;
+  if(a<0)a+=2*Math.PI;
+  var sector=2*Math.PI/n;
+  var off=((a%sector)+sector)%sector-sector/2;
+  var maxR=shapeCR*Math.cos(Math.PI/n)/Math.cos(off);
+  return Math.sqrt(x*x+y*y)<=maxR;
+}
+var shapeCR=0; // set before use
+
+// --- Polarity ---
+function calcPol(edgeSet){
+  var pol={};
+  var ak=Object.keys(edgeSet);if(!ak.length)return pol;
+  var adj={};
+  ak.forEach(function(k){
+    var e=parseEKey(k);
+    var k1=nKey(e.q1,e.r1),k2=nKey(e.q2,e.r2);
+    if(!adj[k1])adj[k1]=[];if(!adj[k2])adj[k2]=[];
+    adj[k1].push(k2);adj[k2].push(k1);
+  });
+  var vis={},all=Object.keys(adj);
+  for(var i=0;i<all.length;i++){
+    if(vis[all[i]])continue;
+    pol[all[i]]=0;vis[all[i]]=true;
+    var q=[all[i]];
+    while(q.length){
+      var cur=q.shift(),cp=pol[cur];
+      (adj[cur]||[]).forEach(function(nb){
+        if(!vis[nb]){pol[nb]=cp===0?1:0;vis[nb]=true;q.push(nb)}
+      });
+    }
+  }
+  return pol;
+}
+
+// --- Generate one icon from seed ---
+function generateIcon(seed){
+  var rand=prng(seed);
+  var edgeSet={};
+  
+  // Actually simplest correct approach for all hexagonal:
+  // Symmetry modes — all produce hexagonal (6 copies total):
+  // 0: 6-fold — arm × 6 rotation
+  // 1: 3 mirror — arm mirrored, pair × 3 rotation (bilateral within each 120°)
+  // 2: 3 flip — arm × 3 at even rotations, mirrored arm × 3 at odd rotations (pinwheel)
+  // 3: dihedral — arm in 30° wedge, mirrored to 60°, × 6 rotation
+  // Wedge angles per symmetry mode
+  var wedgeAngles=[60,60,60,30,90,120,180,180];
+  var wedgeAngle=wedgeAngles[P.sym]||60;
+
+  // Get all possible edges for arm growth
+  var R=P.gr;
+  shapeCR=S*R;
+  var possibleEdges=[];
+  for(var q=-R;q<=R;q++)
+    for(var r=-R;r<=R;r++)
+      for(var d=0;d<6;d++){
+        var nq=q+DIRS[d].dq,nr=r+DIRS[d].dr;
+        if(Math.abs(nq)>R||Math.abs(nr)>R||Math.abs(nq+nr)>R)continue;
+        var p1x=S*(q+r*0.5),p1y=S*r*0.866;
+        var p2x=S*(nq+nr*0.5),p2y=S*nr*0.866;
+        if(!insideShape(p1x,p1y)||!insideShape(p2x,p2y))continue;
+        var mx=(p1x+p2x)/2,my=(p1y+p2y)/2;
+        var ang=Math.atan2(my,mx)*180/Math.PI;
+        if(ang<-2)ang+=360;
+        if(ang>=-2&&ang<wedgeAngle+2){
+          possibleEdges.push({q1:q,r1:r,q2:nq,r2:nr,mx:mx,my:my,dist:Math.sqrt(mx*mx+my*my)});
+        }
+      }
+
+  // Remove duplicate edges
+  var seen={};
+  possibleEdges=possibleEdges.filter(function(e){
+    var k=eKey(e.q1,e.r1,e.q2,e.r2);
+    if(seen[k])return false;seen[k]=true;return true;
+  });
+
+  // Grow arm — split between tree growth and scattered (random) placement
+  var armSet={};
+  var armKeys=[];
+
+  possibleEdges.sort(function(a,b){return a.dist-b.dist});
+  if(!possibleEdges.length)return{edges:edgeSet,pol:{},seed:seed};
+
+  var treeCount=P.as;
+  var scatterCount=P.sc;
+
+  // Tree growth: connected random walk from seed
+  if(treeCount>0){
+    var seedEdge=possibleEdges[Math.min(Math.floor(rand()*2),possibleEdges.length-1)];
+    var sk=eKey(seedEdge.q1,seedEdge.r1,seedEdge.q2,seedEdge.r2);
+    armSet[sk]=1;armKeys.push(sk);
+
+    for(var step=0;step<treeCount-1;step++){
+      var cands=[];
+      armKeys.forEach(function(k){
+        var e=parseEKey(k);
+        [[e.q1,e.r1],[e.q2,e.r2]].forEach(function(node){
+          DIRS.forEach(function(d){
+            var nq=node[0]+d.dq,nr=node[1]+d.dr;
+            if(Math.abs(nq)>R||Math.abs(nr)>R||Math.abs(nq+nr)>R)return;
+            var p1x=S*(node[0]+node[1]*0.5),p1y=S*node[1]*0.866;
+            var p2x=S*(nq+nr*0.5),p2y=S*nr*0.866;
+            if(!insideShape(p1x,p1y)||!insideShape(p2x,p2y))return;
+            var nek=eKey(node[0],node[1],nq,nr);
+            if(armSet[nek])return;
+            var mx=(p1x+p2x)/2,my=(p1y+p2y)/2;
+            var ang=Math.atan2(my,mx)*180/Math.PI;
+            if(ang<-2)ang+=360;
+            if(ang>=-2&&ang<wedgeAngle+2)
+              cands.push({ek:nek,dist:Math.sqrt(mx*mx+my*my)});
+          });
+        });
+      });
+      if(!cands.length)break;
+      cands.sort(function(){return rand()-0.5});
+      var pick=cands[Math.floor(rand()*Math.min(3,cands.length))];
+      armSet[pick.ek]=1;armKeys.push(pick.ek);
+    }
+  }
+
+  // Scattered pieces: randomly placed edges anywhere in the wedge
+  if(scatterCount>0){
+    var available=possibleEdges.filter(function(e){
+      return !armSet[eKey(e.q1,e.r1,e.q2,e.r2)];
+    });
+    for(var s=0;s<scatterCount&&available.length;s++){
+      var idx=Math.floor(rand()*available.length);
+      var re=available[idx];
+      var rk=eKey(re.q1,re.r1,re.q2,re.r2);
+      armSet[rk]=1;armKeys.push(rk);
+      available.splice(idx,1);
+    }
+  }
+
+  // Stamp with symmetry
+  function stamp(q1,r1,q2,r2){edgeSet[eKey(q1,r1,q2,r2)]=1}
+  function stampRot(e,f){var a1=rotNode(e.q1,e.r1,f),a2=rotNode(e.q2,e.r2,f);stamp(a1.q,a1.r,a2.q,a2.r)}
+  function stampRotMir(e,f){var a1=rotNode(e.q1,e.r1,f),a2=rotNode(e.q2,e.r2,f);stamp(a1.q,a1.r,a2.q,a2.r);var m1=mirNode(a1.q,a1.r),m2=mirNode(a2.q,a2.r);stamp(m1.q,m1.r,m2.q,m2.r)}
+  armKeys.forEach(function(k){
+    var e=parseEKey(k);
+    if(P.sym===0){
+      // C6: 6-fold rotation
+      for(var f=0;f<6;f++) stampRot(e,f);
+    } else if(P.sym===1){
+      // D3: 3 mirror — arm + mirror, × 3
+      for(var f=0;f<3;f++) stampRotMir(e,f*2);
+    } else if(P.sym===2){
+      // 3 flip: arm at even rotations, mirrored at odd (pinwheel)
+      for(var f=0;f<3;f++){
+        stampRot(e,f*2);
+        var m1=mirNode(e.q1,e.r1),m2=mirNode(e.q2,e.r2);
+        var r1=rotNode(m1.q,m1.r,f*2+1),r2=rotNode(m2.q,m2.r,f*2+1);
+        stamp(r1.q,r1.r,r2.q,r2.r);
+      }
+    } else if(P.sym===3){
+      // D6: dihedral — mirror + 6×
+      for(var f=0;f<6;f++) stampRotMir(e,f);
+    } else if(P.sym===4){
+      // D2: 2 mirror — arm + mirror, × 2 (cross)
+      for(var f=0;f<2;f++) stampRotMir(e,f*3);
+    } else if(P.sym===5){
+      // C3: 3-fold rotation (chiral triangular)
+      for(var f=0;f<3;f++) stampRot(e,f*2);
+    } else if(P.sym===6){
+      // C2: 2-fold rotation (playing card)
+      for(var f=0;f<2;f++) stampRot(e,f*3);
+    } else if(P.sym===7){
+      // D1: single mirror (Rorschach)
+      stamp(e.q1,e.r1,e.q2,e.r2);
+      var m1=mirNode(e.q1,e.r1),m2=mirNode(e.q2,e.r2);
+      stamp(m1.q,m1.r,m2.q,m2.r);
+    }
+  });
+
+  var pol=calcPol(edgeSet);
+  return{edges:edgeSet,pol:pol,seed:seed};
+}
+
+// --- Shape boundary outline ---
+function gridSVG(){
+  shapeCR=S*P.gr;
+  if(P.sh>=36){
+    return '<circle cx="0" cy="0" r="'+shapeCR.toFixed(1)+'" fill="none" stroke="#e0e0dc" stroke-width="0.8"/>';
+  }
+  var verts=shapeVerts(P.sh,shapeCR);
+  var d='';
+  for(var i=0;i<verts.length;i++) d+=(i?'L':'M')+verts[i][0].toFixed(1)+','+verts[i][1].toFixed(1);
+  return '<path d="'+d+'Z" fill="none" stroke="#e0e0dc" stroke-width="0.8"/>';
+}
+
+// --- Polygon inset (centroid pull) ---
+function insetPoly(pts,amount){
+  var cx=0,cy=0,n=pts.length;
+  for(var i=0;i<n;i++){cx+=pts[i][0];cy+=pts[i][1]}
+  cx/=n;cy/=n;
+  return pts.map(function(p){
+    var dx=p[0]-cx,dy=p[1]-cy;
+    var d=Math.sqrt(dx*dx+dy*dy);
+    if(d<0.1)return[p[0],p[1]];
+    var t=Math.max(0,d-amount)/d;
+    return[cx+dx*t,cy+dy*t];
+  });
+}
+
+// --- Render icon to SVG ---
+function iconToSVG(icon,sz,bgColor,showGrid){
+  var ak=Object.keys(icon.edges);
+  var vx,vy,fullDim;
+
+  if(showGrid){
+    // Fixed viewBox snug around hex outline
+    var R=P.gr;
+    var gridW=S*R;         // max x extent of hex = S*R
+    var gridH=S*R*0.866;   // max y extent of hex
+    var pad=4;
+    fullDim=Math.max((gridW+pad)*2,(gridH+pad)*2);
+    vx=-fullDim/2;vy=-fullDim/2;
+  } else {
+    // Tight viewBox around pieces
+    var mnX=1e9,mxX=-1e9,mnY=1e9,mxY=-1e9;
+    ak.forEach(function(k){
+      var e=parseEKey(k);
+      var pts=plankPts(e.q1,e.r1,e.q2,e.r2,icon.pol);
+      pts.forEach(function(p){if(p[0]<mnX)mnX=p[0];if(p[0]>mxX)mxX=p[0];if(p[1]<mnY)mnY=p[1];if(p[1]>mxY)mxY=p[1]});
+    });
+    if(!ak.length){mnX=0;mxX=sz;mnY=0;mxY=sz}
+    var pad=8;mnX-=pad;mnY-=pad;mxX+=pad;mxY+=pad;
+    fullDim=Math.max(mxX-mnX,mxY-mnY);
+    var cx=(mnX+mxX)/2,cy=(mnY+mxY)/2;
+    vx=cx-fullDim/2;vy=cy-fullDim/2;
+  }
+
+  var parts=['<svg viewBox="',vx.toFixed(1),' ',vy.toFixed(1),' ',fullDim.toFixed(1),' ',fullDim.toFixed(1),'" xmlns="http://www.w3.org/2000/svg" width="',sz,'" height="',sz,'">'];
+  if(bgColor&&bgColor!=='transparent')
+    parts.push('<rect x="',vx.toFixed(1),'" y="',vy.toFixed(1),'" width="',fullDim.toFixed(1),'" height="',fullDim.toFixed(1),'" fill="',bgColor,'"/>');
+
+  if(showGrid) parts.push(gridSVG());
+
+  var strokeAttr=P.bd>0?' stroke="'+(bgColor&&bgColor!=='transparent'?bgColor:P.bg)+'" stroke-width="'+P.bd.toFixed(1)+'" paint-order="stroke"':'';
+  ak.forEach(function(k){
+    var e=parseEKey(k);
+    var pts=plankPts(e.q1,e.r1,e.q2,e.r2,icon.pol);
+    if(P.sp>0) pts=insetPoly(pts,P.sp);
+    if(P.rn>0){
+      var cornerAmt=Math.min(P.rn,0.5)/0.5; // 0→1 over P.rn 0→0.5
+      var ellipseAmt=Math.max(0,(P.rn-0.5)/0.5); // 0→1 over P.rn 0.5→1.0
+      // Phase 2: lerp vertices toward ellipse in local piece coords
+      if(ellipseAmt>0&&pts._mx!==undefined){
+        var emx=pts._mx,emy=pts._my,eux=pts._ux,euy=pts._uy,enx=pts._nx,eny=pts._ny;
+        var ehl=pts._halfL,eaw=pts._avgW;
+        var epts=[];
+        for(var j=0;j<pts.length;j++){
+          // Project vertex into local coords
+          var lx=(pts[j][0]-emx)*eux+(pts[j][1]-emy)*euy; // along edge
+          var ly=(pts[j][0]-emx)*enx+(pts[j][1]-emy)*eny; // perpendicular
+          // Ellipse position at same angle in local space
+          var la=Math.atan2(ly/eaw,lx/ehl);
+          var elx=ehl*Math.cos(la),ely=eaw*Math.sin(la);
+          // Lerp and project back to global
+          var flx=lx+(elx-lx)*ellipseAmt,fly=ly+(ely-ly)*ellipseAmt;
+          epts.push([emx+flx*eux+fly*enx,emy+flx*euy+fly*eny]);
+        }
+        pts=epts;
+      }
+      var n=pts.length,segs=[];
+      for(var i=0;i<n;i++){
+        var prev=pts[(i-1+n)%n],cur=pts[i],next=pts[(i+1)%n];
+        var d1x=prev[0]-cur[0],d1y=prev[1]-cur[1],d2x=next[0]-cur[0],d2y=next[1]-cur[1];
+        var l1=Math.sqrt(d1x*d1x+d1y*d1y),l2=Math.sqrt(d2x*d2x+d2y*d2y);
+        var rr=Math.min(l1,l2)*0.5*cornerAmt;
+        segs.push(i===0?'M':'L',(cur[0]+d1x/l1*rr).toFixed(1),',',(cur[1]+d1y/l1*rr).toFixed(1),
+          'Q',cur[0].toFixed(1),',',cur[1].toFixed(1),' ',(cur[0]+d2x/l2*rr).toFixed(1),',',(cur[1]+d2y/l2*rr).toFixed(1));
+      }
+      parts.push('<path d="',segs.join(''),'Z" fill="#1a1a1a"',strokeAttr,'/>');
+    } else {
+      parts.push('<polygon points="',pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' '),'" fill="#1a1a1a"',strokeAttr,'/>');
+    }
+  });
+  return parts.join('')+'</svg>';
+}
+
+function plankPts(q1,r1,q2,r2,pol){
+  var p1x=S*(q1+r1*0.5),p1y=S*r1*0.866;
+  var p2x=S*(q2+r2*0.5),p2y=S*r2*0.866;
+  var dx=p2x-p1x,dy=p2y-p1y;
+  var len=Math.sqrt(dx*dx+dy*dy);
+  var ux=dx/len,uy=dy/len,nx=-uy,ny=ux;
+
+  var halfW=H*P.wd;
+  var narrowW=halfW*(1-P.ta);
+  var halfL=H*P.ht;
+  if(halfL<2)halfL=2;
+
+  var w1=(pol[nKey(q1,r1)]===1)?narrowW:halfW;
+  var w2=(pol[nKey(q2,r2)]===1)?narrowW:halfW;
+
+  // Gap: offset midpoint outward from grid origin along edge axis
+  var cx=(p1x+p2x)/2,cy=(p1y+p2y)/2;
+  var odist=Math.sqrt(cx*cx+cy*cy);
+  var ox=odist>0?cx/odist*P.ga:0,oy=odist>0?cy/odist*P.ga:0;
+  var mx=cx+ox,my=cy+oy;
+  // Helper: point at (along, across) from midpoint
+  function pt(a,n){return[mx+ux*a+nx*n,my+uy*a+ny*n]}
+  // Attach local frame for ellipse rendering
+  var avgW=(w1+w2)/2;
+  function tag(arr){arr._mx=mx;arr._my=my;arr._ux=ux;arr._uy=uy;arr._nx=nx;arr._ny=ny;arr._halfL=halfL;arr._avgW=avgW;return arr}
+
+  if(P.ps===0){
+    return tag([pt(-halfL,w1),pt(halfL,w2),pt(halfL,-w2),pt(-halfL,-w1)]);
+  } else if(P.ps===1){
+    return tag([pt(-halfL,0),pt(0,w1),pt(halfL,0),pt(0,-w2)]);
+  } else if(P.ps===2){
+    var mw=(w1+w2)/2;
+    return tag([pt(-halfL,w1*0.5),pt(-halfL*0.33,mw),pt(halfL*0.33,mw),pt(halfL,w2*0.5),pt(halfL*0.33,-mw),pt(-halfL*0.33,-mw)]);
+  } else if(P.ps===3){
+    return tag([pt(-halfL,w1),pt(halfL,0),pt(-halfL,-w1)]);
+  } else if(P.ps===4){
+    var inset=halfL*0.5;
+    return tag([pt(-halfL,w1),pt(halfL,w2*0.4),pt(halfL-inset,0),pt(halfL,-w2*0.4),pt(-halfL,-w1)]);
+  } else if(P.ps===5){
+    var mid=Math.min(w1,w2)*0.2;
+    return tag([pt(-halfL,w1),pt(0,mid),pt(halfL,w2),pt(halfL,-w2),pt(0,-mid),pt(-halfL,-w1)]);
+  }
+  return tag([pt(-halfL,w1),pt(halfL,w2),pt(halfL,-w2),pt(-halfL,-w1)]);
+}
+
+// --- Batch generation ---
+function iconFingerprint(icon){
+  if(icon._fp)return icon._fp;
+  icon._fp=Object.keys(icon.edges).sort().join(';');
+  return icon._fp;
+}
+
+var _countTimer=0;
+function countVariations(){
+  clearTimeout(_countTimer);
+  $('uvv').textContent='counting…';
+  _countTimer=setTimeout(function(){
+    var seen={};
+    var unique=0;
+    var maxSamples=5000;
+    var stale=0;
+    for(var i=0;i<maxSamples;i++){
+      var seed=Math.floor(Math.random()*2147483647);
+      var icon=generateIcon(seed);
+      var fp=iconFingerprint(icon);
+      if(!seen[fp]){seen[fp]=1;unique++;stale=0}
+      else{stale++;if(stale>500)break}// stop if 500 consecutive dupes
+    }
+    var exact=stale>500;
+    $('uvv').textContent=exact?unique:unique+'+'
+  },500);
+}
+
+function generateUniqueSeeds(count,existingFPs){
+  var seeds=[];
+  var seen=existingFPs||{};
+  var attempts=0;
+  while(seeds.length<count&&attempts<count*20){
+    attempts++;
+    var seed=Math.floor(Math.random()*2147483647);
+    var icon=generateIcon(seed);
+    var fp=iconFingerprint(icon);
+    if(seen[fp])continue;
+    seen[fp]=1;
+    seeds.push(seed);
+  }
+  return seeds;
+}
+
+function generateBatch(){
+  allSeeds=generateUniqueSeeds(BATCH);
+  selectedIdx=0;
+  regenerate();
+}
+
+function loadMore(){
+  // Collect existing fingerprints
+  var seen={};
+  allIcons.forEach(function(icon){seen[iconFingerprint(icon)]=1});
+  var newSeeds=generateUniqueSeeds(BATCH,seen);
+  allSeeds=allSeeds.concat(newSeeds);
+  // Append new icons without rebuilding all
+  var newIcons=newSeeds.map(function(s){return generateIcon(s)});
+  allIcons=allIcons.concat(newIcons);
+  appendGrid(newIcons,allIcons.length-newIcons.length);
+  countVariations();
+}
+
+function regenerate(){
+  // Rebuild from seeds, dedup — single generation pass
+  var seen={};
+  var validSeeds=[],validIcons=[];
+  for(var i=0;i<allSeeds.length;i++){
+    var icon=generateIcon(allSeeds[i]);
+    var fp=iconFingerprint(icon);
+    if(seen[fp])continue;
+    seen[fp]=1;
+    validSeeds.push(allSeeds[i]);
+    validIcons.push(icon);
+  }
+  allSeeds=validSeeds;
+  allIcons=validIcons;
+  if(selectedIdx>=allIcons.length) selectedIdx=Math.max(0,allIcons.length-1);
+  renderGrid();
+  countVariations();
+}
+
+function makeGridItem(icon,idx){
+  var d=document.createElement('div');
+  d.className='grid-item'+(idx===selectedIdx?' selected':'');
+  d.style.background=P.bg;
+  d.innerHTML=iconToSVG(icon,120,'transparent',true)+'<span class="seed">#'+icon.seed+'</span>';
+  d.onclick=function(){
+    var prev=$('grid').children[selectedIdx];
+    if(prev)prev.className='grid-item';
+    selectedIdx=idx;
+    d.className='grid-item selected';
+    $('seedInfo').textContent='Seed: '+icon.seed;
+  };
+  return d;
+}
+
+function updateGridItem(el,icon,idx){
+  el.className='grid-item'+(idx===selectedIdx?' selected':'');
+  el.style.background=P.bg;
+  var svgEl=el.querySelector('svg');
+  if(svgEl) svgEl.outerHTML=iconToSVG(icon,120,'transparent',true);
+  var seedEl=el.querySelector('.seed');
+  if(seedEl) seedEl.textContent='#'+icon.seed;
+  el.onclick=function(){
+    var prev=$('grid').children[selectedIdx];
+    if(prev)prev.className='grid-item';
+    selectedIdx=idx;
+    el.className='grid-item selected';
+    $('seedInfo').textContent='Seed: '+icon.seed;
+  };
+}
+
+function renderGrid(){
+  var g=$('grid');
+  var existing=g.children;
+  for(var i=0;i<allIcons.length;i++){
+    if(i<existing.length){
+      updateGridItem(existing[i],allIcons[i],i);
+    } else {
+      g.appendChild(makeGridItem(allIcons[i],i));
+    }
+  }
+  while(g.children.length>allIcons.length) g.removeChild(g.lastChild);
+  updateReadouts();
+}
+
+function appendGrid(icons,startIdx){
+  var g=$('grid');
+  icons.forEach(function(icon,i){g.appendChild(makeGridItem(icon,startIdx+i))});
+}
+
+function rerender(){
+  renderGrid();
+}
+
+function updPieces(){
+  $('asv').textContent=P.as;
+  $('scv').textContent=P.sc;
+  $('tpv').textContent=totalPieces();
+}
+
+function updateReadouts(){
+  $('wv').textContent=P.wd.toFixed(2);
+  $('hv').textContent=P.ht.toFixed(2);
+  $('gv').textContent=P.ga.toFixed(1);
+  $('spv').textContent=P.sp.toFixed(1);
+  $('bv').textContent=P.bd.toFixed(1);
+  $('tv').textContent=P.ta.toFixed(2);
+  $('rv').textContent=P.rn.toFixed(2);
+  updPieces();
+  updBtns();
+}
+
+function updBtns(){
+  $('symb').querySelectorAll('button').forEach(function(b,i){b.className=P.sym===i?'on':''});
+  $('shb').querySelectorAll('button').forEach(function(b){b.className=+b.dataset.v===P.sh?'on':''});
+  $('psb').querySelectorAll('button').forEach(function(b){b.className=+b.dataset.v===P.ps?'on':''});
+}
+
+// --- Symmetry buttons ---
+(function(){
+  ['6-fold','3 mirror','3 flip','dihedral','2 mirror','3-fold','2-fold','mirror'].forEach(function(l,i){
+    var b=document.createElement('button');b.textContent=l;
+    b.onclick=function(){P.sym=i;updBtns();regenerate()};
+    $('symb').appendChild(b);
+  });
+})();
+
+// --- Piece shape buttons ---
+(function(){
+  [{l:'bar',v:0},{l:'diamond',v:1},{l:'hex',v:2},{l:'arrow',v:3},{l:'chevron',v:4},{l:'hourglass',v:5}].forEach(function(s){
+    var b=document.createElement('button');b.textContent=s.l;b.dataset.v=s.v;
+    b.onclick=function(){P.ps=s.v;updBtns();rerender()};
+    $('psb').appendChild(b);
+  });
+})();
+
+// --- Shape buttons ---
+(function(){
+  [{l:'3',v:3},{l:'4',v:4},{l:'5',v:5},{l:'6',v:6},{l:'8',v:8},{l:'○',v:36}].forEach(function(s){
+    var b=document.createElement('button');b.textContent=s.l;b.dataset.v=s.v;
+    b.onclick=function(){P.sh=s.v;updBtns();regenerate()};
+    $('shb').appendChild(b);
+  });
+})();
+
+
+function copySVG(){
+  if(!allIcons.length)return;
+  var icon=allIcons[selectedIdx];
+  var svg=iconToSVG(icon,512,P.bg==='#ffffff'?'transparent':P.bg);
+  navigator.clipboard.writeText(svg).then(function(){
+    $('cp').textContent='Copied!';setTimeout(function(){$('cp').textContent='Copy SVG'},1500);
+  });
+}
+
+function copySeed(){
+  if(!allIcons.length)return;
+  var icon=allIcons[selectedIdx];
+  var psNames=['bar','diamond','hex','arrow','chevron','hourglass'];
+  var info='Seed: '+icon.seed+' | Sym: '+['6-fold','3-mirror','3-flip','dihedral','2-mirror','3-fold','2-fold','mirror'][P.sym]+' | Piece: '+(psNames[P.ps]||'bar')+' | Shape: '+(P.sh>=36?'circle':P.sh)+' | Grid: '+P.gr+' | Arm: '+P.as+' | Scatter: '+P.sc+' | Total: '+totalPieces()+' | Width: '+P.wd+' | Height: '+P.ht+' | Gap: '+P.ga+' | Spacing: '+P.sp+' | Taper: '+P.ta;
+  navigator.clipboard.writeText(info).then(function(){
+    $('seedInfo').textContent='Copied: '+info;
+  });
+}
+
+// --- Presets ---
+var PRESETS_KEY='iso-icon-presets';
+
+function getPresets(){
+  try{return JSON.parse(localStorage.getItem(PRESETS_KEY))||[]}
+  catch(e){return[]}
+}
+
+function setPresets(presets){
+  localStorage.setItem(PRESETS_KEY,JSON.stringify(presets));
+  // Also save to file via hidden download link for local persistence
+  renderPresets();
+}
+
+function savePreset(){
+  var name=$('presetName').value.trim();
+  if(!name)return;
+  var presets=getPresets();
+  // Overwrite if same name exists
+  presets=presets.filter(function(p){return p.name!==name});
+  presets.push({name:name,params:JSON.parse(JSON.stringify(P))});
+  setPresets(presets);
+  $('presetName').value='';
+}
+
+function loadPreset(preset){
+  var keys=Object.keys(preset.params);
+  for(var i=0;i<keys.length;i++) P[keys[i]]=preset.params[keys[i]];
+  // Sync slider values
+  var sliders={wd:'wd',ht:'ht',ga:'ga',sp:'sp',bd:'bd',ta:'ta',rn:'rn',as:'as',sc:'sc',gr:'gr'};
+  Object.keys(sliders).forEach(function(k){
+    var el=$(sliders[k]);
+    if(el)el.value=P[k];
+  });
+  updBtns();
+  updateReadouts();
+  regenerate();
+}
+
+function deletePreset(name){
+  var presets=getPresets().filter(function(p){return p.name!==name});
+  setPresets(presets);
+}
+
+function exportPresets(){
+  var presets=getPresets();
+  if(!presets.length)return;
+  var blob=new Blob([JSON.stringify(presets,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='iso-icon-presets.json';
+  a.click();
+}
+
+function importPresets(e){
+  var file=e.target.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(){
+    try{
+      var imported=JSON.parse(reader.result);
+      if(!Array.isArray(imported))return;
+      var presets=getPresets();
+      var names={};
+      presets.forEach(function(p){names[p.name]=1});
+      imported.forEach(function(p){
+        if(p.name&&p.params&&!names[p.name]){presets.push(p);names[p.name]=1}
+      });
+      setPresets(presets);
+    }catch(ex){}
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+function renderPresets(){
+  var list=$('presetList');
+  list.innerHTML='';
+  var presets=getPresets();
+  presets.forEach(function(p){
+    var d=document.createElement('div');
+    d.className='preset-item';
+    var name=document.createElement('span');
+    name.className='preset-name';
+    name.textContent=p.name;
+    name.onclick=function(){loadPreset(p)};
+    var del=document.createElement('button');
+    del.className='del';
+    del.textContent='×';
+    del.onclick=function(){deletePreset(p.name)};
+    d.appendChild(name);
+    d.appendChild(del);
+    list.appendChild(d);
+  });
+  // Import/export buttons
+  if(presets.length){
+    var exp=document.createElement('button');
+    exp.textContent='Export';
+    exp.style.cssText='font-size:10px;padding:2px 7px;border:1px solid #ccc;background:#fff;border-radius:4px;cursor:pointer;margin-top:4px;margin-right:4px;color:#888';
+    exp.onclick=exportPresets;
+    list.appendChild(exp);
+  }
+  var imp=document.createElement('button');
+  imp.textContent='Import';
+  imp.style.cssText='font-size:10px;padding:2px 7px;border:1px solid #ccc;background:#fff;border-radius:4px;cursor:pointer;margin-top:4px;color:#888';
+  imp.onclick=function(){var f=document.createElement('input');f.type='file';f.accept='.json';f.onchange=importPresets;f.click()};
+  list.appendChild(imp);
+}
+
+renderPresets();
+generateBatch();
+</script>
+</body>
+</html>

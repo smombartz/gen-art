@@ -8,26 +8,23 @@
 :root{--accent:#2563eb}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:#f5f5f0;color:#1a1a1a;padding:0}
-.wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.wrap{max-width:1100px;margin:0 auto;display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
 .preview{flex:1;min-width:380px;margin-right:16px;padding-top:16px}
-.preview-header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-.title{font-size:16px;font-weight:700;letter-spacing:-0.01em;color:#1a1a1a;margin:0}
-.header-meta{font-size:12px;color:#aaa;white-space:nowrap}
-.preview-header .seed-display{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.header-actions{display:flex;gap:6px;margin-left:auto}
-.gen{padding:8px 16px;font-size:13px;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:8px;cursor:pointer;transition:background .15s;white-space:nowrap}
+.title{font-size:16px;font-weight:700;letter-spacing:-0.01em;margin-bottom:10px;color:#1a1a1a}
+.btn-row{display:flex;gap:8px;margin-bottom:12px}
+.gen{padding:10px 20px;font-size:15px;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:10px;cursor:pointer;flex:1;transition:background .15s}
 .gen:hover{background:#1d4ed8}
 .gen:active{transform:scale(0.98)}
 .gen.reset{background:#fff;color:#666;border-color:#ddd;flex:0 0 auto}
 .gen.reset:hover{background:#f0f0ec}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--icon-size,160px),1fr));gap:8px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-bottom:12px}
 .grid-item{border-radius:12px;border:2px solid transparent;padding:2px;display:flex;align-items:center;justify-content:center;aspect-ratio:1;cursor:pointer;position:relative;transition:border-color .15s}
 .grid-item svg{width:100%;height:100%}
 .grid-item:hover{border-color:#999}
 .grid-item.selected{border-color:var(--accent)}
 .grid-item .seed{position:absolute;bottom:4px;right:6px;font-size:9px;color:#aaa;font-family:monospace;opacity:0;transition:opacity .15s}
 .grid-item:hover .seed{opacity:1}
-.toolbar{flex:0 0 270px;position:sticky;top:0;align-self:flex-start;background:#fafaf7;border-right:1px solid #e8e8e4;padding:16px;order:-1;max-height:100vh;overflow-y:auto}
+.toolbar{flex:0 0 270px;position:sticky;top:0;align-self:flex-start;background:#fafaf7;border-right:1px solid #e8e8e4;padding:16px 16px 16px 16px;margin-left:16px;order:-1}
 .section{border-bottom:1px solid #e8e8e4;padding:10px 0}
 .section:last-child{border-bottom:none}
 .section summary{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#666;cursor:pointer;padding:2px 0;user-select:none;list-style:none;display:flex;align-items:center;gap:6px}
@@ -60,24 +57,21 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 @media(max-width:700px){
 .wrap{flex-direction:column}
 .preview{min-width:auto;margin-right:16px;margin-left:16px}
-.toolbar{position:static;flex:none;width:auto;border-right:none;padding:12px 16px;border-bottom:1px solid #e8e8e4;order:0}
+.toolbar{position:static;flex:none;width:auto;border-right:none;padding:12px 16px;margin-left:0;border-bottom:1px solid #e8e8e4;order:0}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
 <div class="preview">
-<div class="preview-header">
 <h1 class="title">Iso Icon Generator</h1>
-<span class="header-meta"><span id="uvv" style="font-size:12px;color:#aaa">—</span> unique</span>
-<span class="seed-display" id="seedInfo"></span>
-<div class="header-actions">
+<div class="btn-row">
 <button class="gen" onclick="generateBatch()">Generate</button>
 <button class="gen reset" onclick="resetDefaults()">Reset</button>
 </div>
-</div>
 <div class="grid" id="grid"></div>
-<button class="gen" onclick="loadMore()" id="loadMore" style="background:#fff;color:#1a1a1a;border-color:#ccc;width:100%">Load more</button>
+<button class="gen" onclick="loadMore()" id="loadMore" style="background:#fff;color:#1a1a1a;border-color:#ccc">Load 50 more</button>
+<div class="seed-display" id="seedInfo"></div>
 </div>
 <div class="toolbar">
 
@@ -97,78 +91,45 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <div class="s"><div class="r"><label title="Additional pieces placed randomly (not connected to the arm)">Scatter</label><span id="scv">0</span></div>
 <input type="range" min="0" max="20" step="1" value="0" id="sc" oninput="P.sc=+this.value;updPieces();throttledRegenerate()"></div>
 
-<div class="s"><div class="r"><label title="Radius of the triangular lattice (larger = more room for pieces)">Grid size</label><span id="grv">4</span></div>
-<input type="range" min="2" max="7" step="1" value="4" id="gr" oninput="P.gr=+this.value;$('grv').textContent=P.gr;throttledRegenerate()"></div>
-
-<div class="s"><div class="r"><label title="Size of each icon in the preview grid">Icon size</label><span id="isv">160</span></div>
-<input type="range" min="50" max="200" step="5" value="160" id="is" oninput="document.querySelector('.grid').style.setProperty('--icon-size',this.value+'px');$('isv').textContent=this.value"></div>
+<div class="s"><div class="r"><label title="Radius of the triangular lattice (larger = more room for pieces)">Grid size</label><span id="grv">5</span></div>
+<input type="range" min="2" max="7" step="1" value="5" id="gr" oninput="P.gr=+this.value;$('grv').textContent=P.gr;throttledRegenerate()"></div>
 
 <div class="s"><div class="r"><label>Total pieces</label><span id="tpv">4</span></div></div>
+<div class="s"><div class="r"><label>Unique variations</label><span id="uvv" style="font-size:12px;color:#aaa">—</span></div></div>
 </details>
 
 <details class="section" open>
-<summary>Shape</summary>
-<p class="section-desc">Piece shape and deformation</p>
+<summary>Geometry</summary>
+<p class="section-desc">Individual piece shape and proportions</p>
 
-<div id="shapePreview" style="display:flex;justify-content:center;padding:6px 0 8px"></div>
-
-<div class="s"><label title="Shape preset shortcuts">Shape</label>
+<div class="s"><label title="Shape of each individual piece/plank">Piece</label>
 <div class="bb" id="psb"></div></div>
 
 <div class="s"><div class="r"><label title="How wide each piece is perpendicular to its edge">Width</label><span id="wv">0.88</span></div>
-<input type="range" min="0.1" max="4.0" step="0.01" value="0.88" id="wd" oninput="onWidthChange(+this.value)"></div>
-
-<div style="text-align:right;margin:-6px 0 2px">
-<button id="lkBtn" title="Link width and height" style="font-size:10px;padding:1px 6px;border:1px solid #ccc;background:#fff;border-radius:4px;cursor:pointer;color:#999" onclick="toggleLink()">link</button>
-</div>
+<input type="range" min="0.1" max="4.0" step="0.01" value="0.88" id="wd" oninput="P.wd=+this.value;throttledRerender()"></div>
 
 <div class="s"><div class="r"><label title="How long each piece is along its edge">Height</label><span id="hv">0.85</span></div>
-<input type="range" min="0.1" max="4.0" step="0.01" value="0.85" id="ht" oninput="onHeightChange(+this.value)"></div>
+<input type="range" min="0.1" max="4.0" step="0.01" value="0.85" id="ht" oninput="P.ht=+this.value;throttledRerender()"></div>
 
-<div class="s"><div class="r"><label title="Number of sides for the base polygon">Sides</label><span id="pnv">4</span></div>
-<input type="range" min="3" max="8" step="1" value="4" id="pn" oninput="P.pn=+this.value;$('pnv').textContent=this.value;throttledRerender()"></div>
-
-<div class="s"><div class="r"><label title="Polarity-aware taper: narrows one end of each piece, alternating direction at adjacent nodes">Trapeze</label><span id="pzv">0.25</span></div>
-<input type="range" min="0" max="1" step="0.01" value="0.25" id="pz" oninput="P.pz=+this.value;$('pzv').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
-
-<div class="s"><div class="r"><label title="Shear/lean the shape along its edge axis">Skew</label><span id="pkv">0</span></div>
-<input type="range" min="-1" max="1" step="0.01" value="0" id="pk" oninput="P.pk=+this.value;$('pkv').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
-
-<div class="s"><div class="r"><label title="Push edge midpoints inward (+) or outward (-)">Indent</label><span id="piv">0</span></div>
-<input type="range" min="-1" max="1" step="0.01" value="0" id="pi" oninput="P.pi=+this.value;$('piv').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
-
-<div class="s"><div class="r"><label title="Sharpen ends by collapsing toward centerline">Point</label><span id="pev">0</span></div>
-<input type="range" min="0" max="1" step="0.01" value="0" id="pe" oninput="P.pe=+this.value;$('pev').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
-
-<div class="s"><div class="r"><label title="Rotate the piece shape in degrees">Rotate</label><span id="prv">0</span></div>
-<input type="range" min="0" max="360" step="1" value="0" id="pr" oninput="P.pr=+this.value;$('prv').textContent=this.value;throttledRerender()"></div>
-
-<div class="s"><div class="r"><label title="Corner rounding (0-0.5) then morph toward ellipse (0.5-1.0)">Rounding</label><div style="display:flex;align-items:center;gap:6px"><button id="pcBtn" title="Toggle per-corner rounding" style="font-size:10px;padding:1px 6px;border:1px solid #ccc;background:#fff;border-radius:4px;cursor:pointer;color:#999" onclick="toggleCornerSliders()">corners</button><span id="rv">0</span></div></div>
-<input type="range" min="0" max="1" step="0.01" value="0" id="rn" oninput="P.rn=+this.value;throttledRerender()"></div>
-
-<div class="s" id="cornerSliders" style="display:none;margin-left:8px">
-<div class="r" style="margin-bottom:4px"><label style="font-size:11px;color:#999">Per corner</label>
-<button style="font-size:10px;padding:1px 6px;border:1px solid #ccc;background:#fff;border-radius:4px;cursor:pointer;color:#999" onclick="resetCorners()">reset</button></div>
-<div class="s"><div class="r"><label title="Rounding multiplier for corner 1">C1</label><span id="rc1v">1</span></div>
-<input type="range" min="0" max="1" step="0.01" value="1" id="rc1" oninput="P.rc[0]=+this.value;$('rc1v').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
-<div class="s"><div class="r"><label title="Rounding multiplier for corner 2">C2</label><span id="rc2v">1</span></div>
-<input type="range" min="0" max="1" step="0.01" value="1" id="rc2" oninput="P.rc[1]=+this.value;$('rc2v').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
-<div class="s"><div class="r"><label title="Rounding multiplier for corner 3">C3</label><span id="rc3v">1</span></div>
-<input type="range" min="0" max="1" step="0.01" value="1" id="rc3" oninput="P.rc[2]=+this.value;$('rc3v').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
-<div class="s"><div class="r"><label title="Rounding multiplier for corner 4">C4</label><span id="rc4v">1</span></div>
-<input type="range" min="0" max="1" step="0.01" value="1" id="rc4" oninput="P.rc[3]=+this.value;$('rc4v').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
-</div>
+<div class="s"><div class="r"><label title="Narrowing at alternating nodes (0 = uniform, 1 = full taper)">Taper</label><span id="tv">0.25</span></div>
+<input type="range" min="0" max="1.0" step="0.01" value="0.25" id="ta" oninput="P.ta=+this.value;throttledRerender()"></div>
 </details>
 
 <details class="section">
 <summary>Spacing</summary>
-<p class="section-desc">Gaps and insets between pieces</p>
+<p class="section-desc">Gaps, insets, and borders between pieces</p>
 
 <div class="s"><div class="r"><label title="Offset each piece outward from center">Gap</label><span id="gv">0</span></div>
 <input type="range" min="-100" max="100" step="1" value="0" id="ga" oninput="P.ga=+this.value;throttledRerender()"></div>
 
 <div class="s"><div class="r"><label title="Inset/shrink each piece toward its center">Spacing</label><span id="spv">0</span></div>
 <input type="range" min="0" max="100" step="0.5" value="0" id="sp" oninput="P.sp=+this.value;throttledRerender()"></div>
+
+<div class="s"><div class="r"><label title="Stroke width around each piece (colored by background)">Border</label><span id="bv">0</span></div>
+<input type="range" min="0" max="10" step="0.5" value="0" id="bd" oninput="P.bd=+this.value;throttledRerender()"></div>
+
+<div class="s"><div class="r"><label title="Corner rounding (0-0.5) then morph toward ellipse (0.5-1.0)">Rounding</label><span id="rv">0</span></div>
+<input type="range" min="0" max="1" step="0.01" value="0" id="rn" oninput="P.rn=+this.value;throttledRerender()"></div>
 </details>
 
 <details class="section">
@@ -177,15 +138,6 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <button id="cp" onclick="copySVG()">Copy SVG</button>
 <button onclick="downloadSVG()">Download SVG</button>
 <button onclick="copySeed()">Copy seed</button>
-</div>
-<div style="margin-top:8px;padding-top:8px;border-top:1px solid #e8e8e4">
-<div class="r" style="margin-bottom:6px"><label style="font-size:11px;color:#999">Bulk export</label></div>
-<div style="display:flex;gap:5px;align-items:center">
-<input type="number" id="bulkCount" value="20" min="1" max="500" style="width:60px;font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:6px;outline:none;text-align:center">
-<button class="top" style="padding:4px 10px;font-size:12px;border:1px solid #ccc;background:#fff;border-radius:6px;cursor:pointer;white-space:nowrap" onclick="bulkExportGrid()">Grid SVG</button>
-<button class="top" style="padding:4px 10px;font-size:12px;border:1px solid #ccc;background:#fff;border-radius:6px;cursor:pointer;white-space:nowrap" onclick="bulkExportIndividual()">Individual SVGs</button>
-</div>
-<div id="bulkStatus" style="font-size:11px;color:#999;margin-top:4px"></div>
 </div>
 </details>
 
@@ -202,8 +154,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 </div>
 
 <script>
-var P={sym:0,as:4,wd:0.88,ht:0.85,pz:0.25,ga:0,sp:0,rn:0,rc:[1,1,1,1],bg:'#ffffff',sc:0,gr:4,sh:6,pn:4,pk:0,pi:0,pe:0,pr:0,lk:0};
-var BATCH=20;
+var P={sym:0,as:4,wd:0.88,ht:0.85,ta:0.25,ga:0,sp:0,bd:0,rn:0,bg:'#ffffff',sc:0,gr:5,sh:6,ps:0};
+var BATCH=50;
 function totalPieces(){return P.as+P.sc}
 var allIcons=[];
 var allSeeds=[];
@@ -478,24 +430,21 @@ function iconToSVG(icon,sz,bgColor,showGrid){
   var ak=Object.keys(icon.edges);
   var vx,vy,fullDim;
 
-  // Pre-compute all plank points once (avoids double computation for bounds+render)
-  var allPts={};
-  ak.forEach(function(k){
-    var e=parseEKey(k);
-    allPts[k]=plankPts(e.q1,e.r1,e.q2,e.r2,icon.pol);
-  });
-
   if(showGrid){
+    // Fixed viewBox snug around hex outline
     var R=P.gr;
-    var gridW=S*R;
-    var gridH=S*R*0.866;
+    var gridW=S*R;         // max x extent of hex = S*R
+    var gridH=S*R*0.866;   // max y extent of hex
     var pad=4;
     fullDim=Math.max((gridW+pad)*2,(gridH+pad)*2);
     vx=-fullDim/2;vy=-fullDim/2;
   } else {
+    // Tight viewBox around pieces
     var mnX=1e9,mxX=-1e9,mnY=1e9,mxY=-1e9;
     ak.forEach(function(k){
-      allPts[k].forEach(function(p){if(p[0]<mnX)mnX=p[0];if(p[0]>mxX)mxX=p[0];if(p[1]<mnY)mnY=p[1];if(p[1]>mxY)mxY=p[1]});
+      var e=parseEKey(k);
+      var pts=plankPts(e.q1,e.r1,e.q2,e.r2,icon.pol);
+      pts.forEach(function(p){if(p[0]<mnX)mnX=p[0];if(p[0]>mxX)mxX=p[0];if(p[1]<mnY)mnY=p[1];if(p[1]>mxY)mxY=p[1]});
     });
     if(!ak.length){mnX=0;mxX=sz;mnY=0;mxY=sz}
     var pad=8;mnX-=pad;mnY-=pad;mxX+=pad;mxY+=pad;
@@ -510,8 +459,10 @@ function iconToSVG(icon,sz,bgColor,showGrid){
 
   if(showGrid) parts.push(gridSVG());
 
+  var strokeAttr=P.bd>0?' stroke="'+(bgColor&&bgColor!=='transparent'?bgColor:P.bg)+'" stroke-width="'+P.bd.toFixed(1)+'" paint-order="stroke"':'';
   ak.forEach(function(k){
-    var pts=allPts[k];
+    var e=parseEKey(k);
+    var pts=plankPts(e.q1,e.r1,e.q2,e.r2,icon.pol);
     if(P.sp>0) pts=insetPoly(pts,P.sp);
     if(P.rn>0){
       var cornerAmt=Math.min(P.rn,0.5)/0.5; // 0→1 over P.rn 0→0.5
@@ -539,64 +490,16 @@ function iconToSVG(icon,sz,bgColor,showGrid){
         var prev=pts[(i-1+n)%n],cur=pts[i],next=pts[(i+1)%n];
         var d1x=prev[0]-cur[0],d1y=prev[1]-cur[1],d2x=next[0]-cur[0],d2y=next[1]-cur[1];
         var l1=Math.sqrt(d1x*d1x+d1y*d1y),l2=Math.sqrt(d2x*d2x+d2y*d2y);
-        var cm=P.rc[i%P.rc.length];
-        var rr=Math.min(l1,l2)*0.5*cornerAmt*cm;
+        var rr=Math.min(l1,l2)*0.5*cornerAmt;
         segs.push(i===0?'M':'L',(cur[0]+d1x/l1*rr).toFixed(1),',',(cur[1]+d1y/l1*rr).toFixed(1),
           'Q',cur[0].toFixed(1),',',cur[1].toFixed(1),' ',(cur[0]+d2x/l2*rr).toFixed(1),',',(cur[1]+d2y/l2*rr).toFixed(1));
       }
-      parts.push('<path d="',segs.join(''),'Z" fill="#1a1a1a"/>');
+      parts.push('<path d="',segs.join(''),'Z" fill="#1a1a1a"',strokeAttr,'/>');
     } else {
-      parts.push('<polygon points="',pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' '),'" fill="#1a1a1a"/>');
+      parts.push('<polygon points="',pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' '),'" fill="#1a1a1a"',strokeAttr,'/>');
     }
   });
   return parts.join('')+'</svg>';
-}
-
-// --- Shared parametric shape pipeline (local coords) ---
-function pieceVerts(halfL,halfW,polFlip){
-  var n=Math.round(P.pn);if(n<3)n=3;
-  var verts=[];
-  for(var i=0;i<n;i++){
-    var angle=2*Math.PI*i/n-Math.PI/2+Math.PI/n;
-    verts.push([Math.cos(angle)*halfL, Math.sin(angle)*halfW]);
-  }
-  if(P.pk!==0) for(var i=0;i<verts.length;i++) verts[i][0]+=verts[i][1]*P.pk;
-  if(P.pz!==0) for(var i=0;i<verts.length;i++){
-    var t=(verts[i][0]+halfL)/(2*halfL);
-    verts[i][1]*=(polFlip?(1-P.pz*(1-t)):(1-P.pz*t));
-  }
-  if(P.pe!==0) for(var i=0;i<verts.length;i++){
-    verts[i][1]*=(1-P.pe*Math.min(1,Math.abs(verts[i][0])/halfL));
-  }
-  if(P.pi!==0){
-    var ind=[],cA=0,cN=0;
-    for(var j=0;j<verts.length;j++){cA+=verts[j][0];cN+=verts[j][1]}
-    cA/=verts.length;cN/=verts.length;
-    for(var i=0;i<verts.length;i++){
-      var v0=verts[i],v1=verts[(i+1)%verts.length];
-      ind.push(v0);
-      var mA=(v0[0]+v1[0])/2,mN=(v0[1]+v1[1])/2;
-      var eA=v1[0]-v0[0],eN=v1[1]-v0[1],eL=Math.sqrt(eA*eA+eN*eN);
-      if(eL>0.01){
-        var tA=cA-mA,tN=cN-mN,tD=Math.sqrt(tA*tA+tN*tN);
-        if(tD>0.01){tA/=tD;tN/=tD;ind.push([mA+tA*eL*0.3*P.pi,mN+tN*eL*0.3*P.pi])}
-        else ind.push([mA,mN]);
-      }
-    }
-    verts=ind;
-  }
-  if(P.pr!==0){
-    var rad=P.pr*Math.PI/180,cosR=Math.cos(rad),sinR=Math.sin(rad);
-    var rcx=0,rcy=0;
-    for(var i=0;i<verts.length;i++){rcx+=verts[i][0];rcy+=verts[i][1]}
-    rcx/=verts.length;rcy/=verts.length;
-    for(var i=0;i<verts.length;i++){
-      var dx=verts[i][0]-rcx,dy=verts[i][1]-rcy;
-      verts[i][0]=rcx+dx*cosR-dy*sinR;
-      verts[i][1]=rcy+dx*sinR+dy*cosR;
-    }
-  }
-  return verts;
 }
 
 function plankPts(q1,r1,q2,r2,pol){
@@ -607,21 +510,41 @@ function plankPts(q1,r1,q2,r2,pol){
   var ux=dx/len,uy=dy/len,nx=-uy,ny=ux;
 
   var halfW=H*P.wd;
+  var narrowW=halfW*(1-P.ta);
   var halfL=H*P.ht;
   if(halfL<2)halfL=2;
-  var polNode1=pol[nKey(q1,r1)]===1;
 
+  var w1=(pol[nKey(q1,r1)]===1)?narrowW:halfW;
+  var w2=(pol[nKey(q2,r2)]===1)?narrowW:halfW;
+
+  // Gap: offset midpoint outward from grid origin along edge axis
   var cx=(p1x+p2x)/2,cy=(p1y+p2y)/2;
   var odist=Math.sqrt(cx*cx+cy*cy);
   var ox=odist>0?cx/odist*P.ga:0,oy=odist>0?cy/odist*P.ga:0;
   var mx=cx+ox,my=cy+oy;
-  function mkpt(a,n){return[mx+ux*a+nx*n,my+uy*a+ny*n]}
-  function tag(arr){arr._mx=mx;arr._my=my;arr._ux=ux;arr._uy=uy;arr._nx=nx;arr._ny=ny;arr._halfL=halfL;arr._avgW=halfW;return arr}
+  // Helper: point at (along, across) from midpoint
+  function pt(a,n){return[mx+ux*a+nx*n,my+uy*a+ny*n]}
+  // Attach local frame for ellipse rendering
+  var avgW=(w1+w2)/2;
+  function tag(arr){arr._mx=mx;arr._my=my;arr._ux=ux;arr._uy=uy;arr._nx=nx;arr._ny=ny;arr._halfL=halfL;arr._avgW=avgW;return arr}
 
-  var verts=pieceVerts(halfL,halfW,polNode1);
-  var pts=[];
-  for(var i=0;i<verts.length;i++) pts.push(mkpt(verts[i][0],verts[i][1]));
-  return tag(pts);
+  if(P.ps===0){
+    return tag([pt(-halfL,w1),pt(halfL,w2),pt(halfL,-w2),pt(-halfL,-w1)]);
+  } else if(P.ps===1){
+    return tag([pt(-halfL,0),pt(0,w1),pt(halfL,0),pt(0,-w2)]);
+  } else if(P.ps===2){
+    var mw=(w1+w2)/2;
+    return tag([pt(-halfL,w1*0.5),pt(-halfL*0.33,mw),pt(halfL*0.33,mw),pt(halfL,w2*0.5),pt(halfL*0.33,-mw),pt(-halfL*0.33,-mw)]);
+  } else if(P.ps===3){
+    return tag([pt(-halfL,w1),pt(halfL,0),pt(-halfL,-w1)]);
+  } else if(P.ps===4){
+    var inset=halfL*0.5;
+    return tag([pt(-halfL,w1),pt(halfL,w2*0.4),pt(halfL-inset,0),pt(halfL,-w2*0.4),pt(-halfL,-w1)]);
+  } else if(P.ps===5){
+    var mid=Math.min(w1,w2)*0.2;
+    return tag([pt(-halfL,w1),pt(0,mid),pt(halfL,w2),pt(halfL,-w2),pt(0,-mid),pt(-halfL,-w1)]);
+  }
+  return tag([pt(-halfL,w1),pt(halfL,w2),pt(halfL,-w2),pt(-halfL,-w1)]);
 }
 
 // --- Batch generation ---
@@ -632,26 +555,23 @@ function iconFingerprint(icon){
 }
 
 var _countTimer=0;
-var _countRaf=0;
 function countVariations(){
   clearTimeout(_countTimer);
-  if(_countRaf){cancelAnimationFrame(_countRaf);_countRaf=0}
   $('uvv').textContent='counting…';
   _countTimer=setTimeout(function(){
-    var seen={},unique=0,stale=0,i=0,maxSamples=5000,chunkSize=200;
-    function chunk(){
-      var end=Math.min(i+chunkSize,maxSamples);
-      for(;i<end;i++){
-        var seed=Math.floor(Math.random()*2147483647);
-        var icon=generateIcon(seed);
-        var fp=iconFingerprint(icon);
-        if(!seen[fp]){seen[fp]=1;unique++;stale=0}
-        else{stale++;if(stale>500){$('uvv').textContent=unique;return}}
-      }
-      if(i<maxSamples){_countRaf=requestAnimationFrame(chunk)}
-      else{$('uvv').textContent=unique+'+'}
+    var seen={};
+    var unique=0;
+    var maxSamples=5000;
+    var stale=0;
+    for(var i=0;i<maxSamples;i++){
+      var seed=Math.floor(Math.random()*2147483647);
+      var icon=generateIcon(seed);
+      var fp=iconFingerprint(icon);
+      if(!seen[fp]){seen[fp]=1;unique++;stale=0}
+      else{stale++;if(stale>500)break}// stop if 500 consecutive dupes
     }
-    _countRaf=requestAnimationFrame(chunk);
+    var exact=stale>500;
+    $('uvv').textContent=exact?unique:unique+'+'
   },500);
 }
 
@@ -761,35 +681,6 @@ function appendGrid(icons,startIdx){
 
 function rerender(){
   renderGrid();
-  renderShapePreview();
-}
-
-function renderShapePreview(){
-  var sz=80,pad=6;
-  var ratio=P.wd/P.ht,maxR=(sz-pad*2)/2;
-  var halfL,halfW;
-  if(ratio>1){halfW=maxR;halfL=maxR/ratio}else{halfL=maxR;halfW=maxR*ratio}
-  var verts=pieceVerts(halfL,halfW,false);
-  var pts=verts.map(function(v){return[v[0]+sz/2,v[1]+sz/2]});
-  var svg;
-  if(P.rn>0){
-    var cornerAmt=Math.min(P.rn,0.5)/0.5;
-    var nv=pts.length,segs=[];
-    for(var i=0;i<nv;i++){
-      var prev=pts[(i-1+nv)%nv],cur=pts[i],next=pts[(i+1)%nv];
-      var d1x=prev[0]-cur[0],d1y=prev[1]-cur[1],d2x=next[0]-cur[0],d2y=next[1]-cur[1];
-      var l1=Math.sqrt(d1x*d1x+d1y*d1y),l2=Math.sqrt(d2x*d2x+d2y*d2y);
-      var cm=P.rc[i%P.rc.length];
-      var rr=Math.min(l1,l2)*0.5*cornerAmt*cm;
-      segs.push(i===0?'M':'L',(cur[0]+d1x/l1*rr).toFixed(1),',',(cur[1]+d1y/l1*rr).toFixed(1),
-        'Q',cur[0].toFixed(1),',',cur[1].toFixed(1),' ',(cur[0]+d2x/l2*rr).toFixed(1),',',(cur[1]+d2y/l2*rr).toFixed(1));
-    }
-    svg='<path d="'+segs.join('')+'Z" fill="#1a1a1a" opacity="0.8"/>';
-  } else {
-    var d=pts.map(function(p,i){return(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)}).join('')+'Z';
-    svg='<path d="'+d+'" fill="#1a1a1a" opacity="0.8"/>';
-  }
-  $('shapePreview').innerHTML='<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 '+sz+' '+sz+'">'+svg+'</svg>';
 }
 
 function updPieces(){
@@ -798,22 +689,14 @@ function updPieces(){
   $('tpv').textContent=totalPieces();
 }
 
-function syncShapeSliders(){
-  $('pn').value=P.pn;$('pnv').textContent=Math.round(P.pn);
-  $('pk').value=P.pk;$('pkv').textContent=P.pk.toFixed(2);
-  $('pi').value=P.pi;$('piv').textContent=P.pi.toFixed(2);
-  $('pe').value=P.pe;$('pev').textContent=P.pe.toFixed(2);
-  $('pz').value=P.pz;$('pzv').textContent=P.pz.toFixed(2);
-  $('pr').value=P.pr;$('prv').textContent=Math.round(P.pr);
-}
-
 function updateReadouts(){
   $('wv').textContent=P.wd.toFixed(2);
   $('hv').textContent=P.ht.toFixed(2);
   $('gv').textContent=P.ga.toFixed(1);
   $('spv').textContent=P.sp.toFixed(1);
+  $('bv').textContent=P.bd.toFixed(1);
+  $('tv').textContent=P.ta.toFixed(2);
   $('rv').textContent=P.rn.toFixed(2);
-  syncShapeSliders();
   updPieces();
   updBtns();
 }
@@ -821,13 +704,7 @@ function updateReadouts(){
 function updBtns(){
   $('symb').querySelectorAll('button').forEach(function(b,i){b.className=P.sym===i?'on':''});
   $('shb').querySelectorAll('button').forEach(function(b){b.className=+b.dataset.v===P.sh?'on':''});
-  // Compare current params against each shape preset
-  var activePreset=-1;
-  for(var i=0;i<SHAPE_PRESETS.length;i++){
-    var s=SHAPE_PRESETS[i];
-    if(Math.round(P.pn)===s.pn&&P.pk===s.pk&&P.pi===s.pi&&P.pe===s.pe&&P.pz===s.pz&&P.pr===s.pr){activePreset=i;break}
-  }
-  $('psb').querySelectorAll('button').forEach(function(b,i){b.className=i===activePreset?'on':''});
+  $('psb').querySelectorAll('button').forEach(function(b){b.className=+b.dataset.v===P.ps?'on':''});
 }
 
 // --- Symmetry buttons ---
@@ -839,24 +716,11 @@ function updBtns(){
   });
 })();
 
-// --- Piece shape presets ---
-var SHAPE_PRESETS=[
-  {l:'bar',    pn:4,pk:0,pi:0,pe:0,pz:0,pr:0},
-  {l:'diamond',pn:4,pk:0,pi:0,pe:1,pz:0,pr:0},
-  {l:'hex',    pn:6,pk:0,pi:0,pe:0,pz:0,pr:0},
-  {l:'arrow',  pn:3,pk:0,pi:0,pe:0.5,pz:0,pr:0},
-  {l:'chevron',pn:4,pk:0,pi:-0.5,pe:0.5,pz:0,pr:0},
-  {l:'hourglass',pn:4,pk:0,pi:0,pe:0,pz:0,pr:0}
-];
-
 // --- Piece shape buttons ---
 (function(){
-  SHAPE_PRESETS.forEach(function(s,i){
-    var b=document.createElement('button');b.textContent=s.l;b.dataset.idx=i;
-    b.onclick=function(){
-      P.pn=s.pn;P.pk=s.pk;P.pi=s.pi;P.pe=s.pe;P.pz=s.pz;P.pr=s.pr;
-      syncShapeSliders();updBtns();rerender();
-    };
+  [{l:'bar',v:0},{l:'diamond',v:1},{l:'hex',v:2},{l:'arrow',v:3},{l:'chevron',v:4},{l:'hourglass',v:5}].forEach(function(s){
+    var b=document.createElement('button');b.textContent=s.l;b.dataset.v=s.v;
+    b.onclick=function(){P.ps=s.v;updBtns();rerender()};
     $('psb').appendChild(b);
   });
 })();
@@ -871,47 +735,11 @@ var SHAPE_PRESETS=[
 })();
 
 
-var _linkRatio=1;
-function toggleLink(){
-  P.lk=P.lk?0:1;
-  if(P.lk) _linkRatio=P.wd/P.ht;
-  $('lkBtn').style.background=P.lk?'var(--accent)':'#fff';
-  $('lkBtn').style.color=P.lk?'#fff':'#999';
-  $('lkBtn').style.borderColor=P.lk?'var(--accent)':'#ccc';
-}
-function onWidthChange(v){
-  P.wd=v;
-  if(P.lk){P.ht=v/_linkRatio;$('ht').value=P.ht;$('hv').textContent=P.ht.toFixed(2)}
-  throttledRerender();
-}
-function onHeightChange(v){
-  P.ht=v;
-  if(P.lk){P.wd=v*_linkRatio;$('wd').value=P.wd;$('wv').textContent=P.wd.toFixed(2)}
-  throttledRerender();
-}
-
-var _cornersVisible=false;
-function toggleCornerSliders(){
-  _cornersVisible=!_cornersVisible;
-  $('cornerSliders').style.display=_cornersVisible?'block':'none';
-  $('pcBtn').style.background=_cornersVisible?'var(--accent)':'#fff';
-  $('pcBtn').style.color=_cornersVisible?'#fff':'#999';
-  $('pcBtn').style.borderColor=_cornersVisible?'var(--accent)':'#ccc';
-}
-function setAllCorners(){}
-function resetCorners(){
-  P.rc=[1,1,1,1];
-  for(var i=1;i<=4;i++){$('rc'+i).value=1;$('rc'+i+'v').textContent='1.00'}
-  throttledRerender();
-}
 function resetDefaults(){
-  var defaults={sym:0,as:4,wd:0.88,ht:0.85,pz:0.25,ga:0,sp:0,rn:0,bg:'#ffffff',sc:0,gr:4,sh:6,pn:4,pk:0,pi:0,pe:0,pr:0,lk:0};
+  var defaults={sym:0,as:4,wd:0.88,ht:0.85,ta:0.25,ga:0,sp:0,bd:0,rn:0,bg:'#ffffff',sc:0,gr:5,sh:6,ps:0};
   Object.keys(defaults).forEach(function(k){P[k]=defaults[k]});
-  P.rc=[1,1,1,1];
-  var sliders={wd:'wd',ht:'ht',ga:'ga',sp:'sp',pz:'pz',rn:'rn',as:'as',sc:'sc',gr:'gr',pn:'pn',pk:'pk',pi:'pi',pe:'pe',pr:'pr'};
+  var sliders={wd:'wd',ht:'ht',ga:'ga',sp:'sp',bd:'bd',ta:'ta',rn:'rn',as:'as',sc:'sc',gr:'gr'};
   Object.keys(sliders).forEach(function(k){var el=$(sliders[k]);if(el)el.value=P[k]});
-  syncShapeSliders();
-  resetCorners();setAllCorners();
   updBtns();updateReadouts();regenerate();
 }
 
@@ -935,63 +763,11 @@ function downloadSVG(){
   a.click();
 }
 
-function bulkExportGrid(){
-  var count=Math.max(1,Math.min(500,+$('bulkCount').value||20));
-  $('bulkStatus').textContent='Generating '+count+' variations…';
-  setTimeout(function(){
-    var seeds=generateUniqueSeeds(count);
-    var icons=seeds.map(function(s){return generateIcon(s)});
-    var iconSz=128,pad=8;
-    var cols=Math.ceil(Math.sqrt(count));
-    var rows=Math.ceil(count/cols);
-    var w=cols*(iconSz+pad)+pad,h=rows*(iconSz+pad)+pad;
-    var parts=['<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'">'];
-    parts.push('<rect width="'+w+'" height="'+h+'" fill="'+(P.bg==='#ffffff'?'#ffffff':P.bg)+'"/>');
-    for(var i=0;i<icons.length;i++){
-      var col=i%cols,row=Math.floor(i/cols);
-      var x=pad+col*(iconSz+pad),y=pad+row*(iconSz+pad);
-      var svg=iconToSVG(icons[i],iconSz,P.bg==='#ffffff'?'transparent':P.bg);
-      // Strip outer <svg> tag and embed as <g> with transform
-      var inner=svg.replace(/<svg[^>]*>/,'').replace(/<\/svg>/,'');
-      parts.push('<g transform="translate('+x+','+y+')">'+inner+'</g>');
-    }
-    parts.push('</svg>');
-    var blob=new Blob([parts.join('')],{type:'image/svg+xml'});
-    var a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download='iso-icons-grid-'+count+'.svg';
-    a.click();
-    $('bulkStatus').textContent='Exported '+icons.length+' icons as grid SVG';
-  },50);
-}
-
-function bulkExportIndividual(){
-  var count=Math.max(1,Math.min(500,+$('bulkCount').value||20));
-  $('bulkStatus').textContent='Generating '+count+' variations…';
-  setTimeout(function(){
-    var seeds=generateUniqueSeeds(count);
-    var icons=seeds.map(function(s){return generateIcon(s)});
-    var bg=P.bg==='#ffffff'?'transparent':P.bg;
-    // Create combined HTML file with all SVGs for easy saving
-    var parts=['<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Iso Icons Export</title>'];
-    parts.push('<style>body{background:#f5f5f0;display:flex;flex-wrap:wrap;gap:8px;padding:16px}svg{background:#fff;border-radius:8px}</style></head><body>');
-    for(var i=0;i<icons.length;i++){
-      parts.push(iconToSVG(icons[i],256,bg));
-    }
-    parts.push('</body></html>');
-    var blob=new Blob([parts.join('')],{type:'text/html'});
-    var a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download='iso-icons-'+count+'.html';
-    a.click();
-    $('bulkStatus').textContent='Exported '+icons.length+' icons as HTML';
-  },50);
-}
-
 function copySeed(){
   if(!allIcons.length)return;
   var icon=allIcons[selectedIdx];
-  var info='Seed: '+icon.seed+' | Sym: '+['6-fold','3-mirror','3-flip','dihedral','2-mirror','3-fold','2-fold','mirror'][P.sym]+' | Sides: '+Math.round(P.pn)+' | Skew: '+P.pk.toFixed(2)+' | Indent: '+P.pi.toFixed(2)+' | Point: '+P.pe.toFixed(2)+' | Trapeze: '+P.pz.toFixed(2)+' | Rotate: '+P.pr+' | Shape: '+(P.sh>=36?'circle':P.sh)+' | Grid: '+P.gr+' | Arm: '+P.as+' | Scatter: '+P.sc+' | Total: '+totalPieces()+' | Width: '+P.wd+' | Height: '+P.ht+' | Gap: '+P.ga+' | Spacing: '+P.sp;
+  var psNames=['bar','diamond','hex','arrow','chevron','hourglass'];
+  var info='Seed: '+icon.seed+' | Sym: '+['6-fold','3-mirror','3-flip','dihedral','2-mirror','3-fold','2-fold','mirror'][P.sym]+' | Piece: '+(psNames[P.ps]||'bar')+' | Shape: '+(P.sh>=36?'circle':P.sh)+' | Grid: '+P.gr+' | Arm: '+P.as+' | Scatter: '+P.sc+' | Total: '+totalPieces()+' | Width: '+P.wd+' | Height: '+P.ht+' | Gap: '+P.ga+' | Spacing: '+P.sp+' | Taper: '+P.ta;
   navigator.clipboard.writeText(info).then(function(){
     $('seedInfo').textContent='Copied: '+info;
   });
@@ -1025,33 +801,12 @@ function savePreset(){
 function loadPreset(preset){
   var keys=Object.keys(preset.params);
   for(var i=0;i<keys.length;i++) P[keys[i]]=preset.params[keys[i]];
-  if(!Array.isArray(P.rc)||P.rc.length!==4) P.rc=[1,1,1,1];
-  // Backward compat: map old taper to trapeze
-  if(P.ta!==undefined){P.pz=P.ta;delete P.ta}
-  if(P.pp!==undefined){delete P.pp}
-  // Backward compat: map old P.ps integer to parametric values
-  if(typeof P.ps==='number'&&P.ps>=0&&P.ps<SHAPE_PRESETS.length){
-    var sp=SHAPE_PRESETS[P.ps];
-    P.pn=sp.pn;P.pk=sp.pk;P.pi=sp.pi;P.pe=sp.pe;P.pz=sp.pz;P.pr=sp.pr;
-  }
-  delete P.ps;
-  // Ensure parametric shape params have defaults
-  if(P.pn===undefined)P.pn=4;
-  if(P.pk===undefined)P.pk=0;
-  if(P.pi===undefined)P.pi=0;
-  if(P.pe===undefined)P.pe=0;
-  if(P.pz===undefined)P.pz=0.25;
-  if(P.pr===undefined)P.pr=0;
-  if(P.lk===undefined)P.lk=0;
   // Sync slider values
-  var sliders={wd:'wd',ht:'ht',ga:'ga',sp:'sp',pz:'pz',rn:'rn',as:'as',sc:'sc',gr:'gr',pn:'pn',pk:'pk',pi:'pi',pe:'pe',pr:'pr'};
+  var sliders={wd:'wd',ht:'ht',ga:'ga',sp:'sp',bd:'bd',ta:'ta',rn:'rn',as:'as',sc:'sc',gr:'gr'};
   Object.keys(sliders).forEach(function(k){
     var el=$(sliders[k]);
     if(el)el.value=P[k];
   });
-  for(var i=1;i<=4;i++){$('rc'+i).value=P.rc[i-1];$('rc'+i+'v').textContent=P.rc[i-1].toFixed(2)}
-  syncShapeSliders();
-  setAllCorners();
   updBtns();
   updateReadouts();
   regenerate();
@@ -1130,7 +885,6 @@ function renderPresets(){
 
 renderPresets();
 generateBatch();
-renderShapePreview();
 if(allIcons.length)$('seedInfo').textContent='Seed: '+allIcons[0].seed;
 </script>
 </body>

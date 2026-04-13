@@ -1,5 +1,238 @@
 # Change Log
 
+## 2026-04-10 - Bulk export feature
+
+**What Changed:**
+- Added bulk export section to the Export panel with a count input (1-500, default 20)
+- "Grid SVG" button: generates N unique variations and downloads as a single SVG with all icons in a grid layout
+- "Individual SVGs" button: generates N unique variations and downloads as an HTML file containing all SVGs at 256px (easy to view/save individually)
+- Status text shows generation progress and result count
+
+**Why:**
+- Users need to export many variations at once for design exploration and asset generation
+
+**Files Modified:**
+- `iso-icon-generator.html` — HTML for bulk export UI, bulkExportGrid() and bulkExportIndividual() functions
+
+---
+
+## 2026-04-09 - Preview header row, corners button repositioned
+
+**What Changed:**
+- Moved title, unique variations count, seed info, Generate and Reset buttons into a single header row at the top of the preview area
+- Removed "Unique variations" from Structure section (now in header)
+- Moved "corners" toggle button to left of the rounding value readout
+- Made Generate/Reset buttons smaller to fit the header row
+- "Load more" button kept below grid, full width
+
+**Why:**
+- Consolidates preview-area controls into one compact header
+- Corners button position is more natural next to the label
+
+**Files Modified:**
+- `iso-icon-generator.html` — HTML restructure, new CSS for preview-header
+
+---
+
+## 2026-04-09 - Performance optimizations
+
+**What Changed:**
+- Reduced BATCH from 50 to 20 (60% fewer icons per generate)
+- Cached plankPts() results in iconToSVG() — was computing each edge twice (once for bounds, once for render)
+- Extracted shared `shapeVerts()` function from plankPts() and renderShapePreview() — eliminates duplicated shape pipeline code
+- Made countVariations() non-blocking: processes in 200-icon chunks via requestAnimationFrame instead of blocking UI for 3-5 seconds
+- Removed border (`bd`) parameter and all related rendering code (strokeAttr)
+
+**Why:**
+- Slider changes were slow due to re-rendering 50 icons with double plankPts computation per edge
+- countVariations() blocked the main thread for seconds after batch operations
+- Code duplication between plankPts and renderShapePreview made both slower and harder to maintain
+
+**Files Modified:**
+- `iso-icon-generator.html` — BATCH reduction, plankPts cache, shared shapeVerts(), async countVariations(), border removal
+
+---
+
+## 2026-04-09 - Move rounding to Shape, fix preview, remove border
+
+**What Changed:**
+- Moved Rounding slider + per-corner controls from Spacing section to Shape section
+- Fixed shape preview to reflect all parameters: width/height proportions, trapeze, rounding (with per-corner), skew, indent, point, rotate
+- Removed Border feature (`bd` parameter, `strokeAttr` rendering, slider, all references)
+- Spacing section now only contains Gap and Spacing
+
+**Why:**
+- Rounding is a shape property, not a spacing property
+- Shape preview was using fixed dimensions and missing rounding, making it not reflect actual shape
+- Border feature removed per user request
+
+**Files Modified:**
+- `iso-icon-generator.html` — HTML restructure, renderShapePreview rewrite, border removal
+
+---
+
+## 2026-04-09 - Shape controls redesign: flat base, trapeze, rotate, link
+
+**What Changed:**
+- Fixed base shape orientation: flat edge at bottom (was diamond/vertex at top)
+- Replaced taper (`ta`) with trapeze (`pz`): polarity-aware taper that narrows one end of each piece, alternating direction at adjacent nodes
+- Removed pinch (`pp`): redundant with indent
+- Added rotate (`pr`): rotates piece shape 0-360 degrees
+- Added width/height link toggle: locks ratio so both sliders move together
+- Reordered controls: Width > link > Height > Sides > Trapeze > Skew > Indent > Point > Rotate
+- Updated presets, reset, seed copy, and preset loading with backward compatibility (old `ta` maps to `pz`)
+
+**Why:**
+- Diamond orientation made it impossible to create basic trapezoid shapes
+- Taper and pinch were confusingly similar; trapeze is more intuitive
+- Control order now flows from basic dimensions to modifiers
+
+**Files Modified:**
+- `iso-icon-generator.html` — plankPts rewrite, HTML restructure, new functions, preset/compat updates
+- `docs/plans/2026-04-09-shape-controls-redesign.md` — design doc
+- `docs/plans/2026-04-09-shape-controls-impl.md` — implementation plan
+
+---
+
+## 2026-04-09 - Shape preview in toolbar
+
+**What Changed:**
+- Added small 80x80 SVG preview of the current piece shape in the Shape section
+- Preview shows above the preset buttons, updates live as shape sliders change
+- Uses same parametric pipeline (n-gon + skew/point/pinch/indent) rendered in local coords
+- Reflects taper effect on width
+
+**Why:**
+- Gives immediate visual feedback of the piece shape without needing to look at the icon grid
+
+**Files Modified:**
+- `iso-icon-generator.html` — added shapePreview div, renderShapePreview() function, hooked into rerender and init
+
+---
+
+## 2026-04-08 - Parametric shape system replaces hardcoded piece shapes
+
+**What Changed:**
+- Replaced 6 hardcoded piece shapes (bar, diamond, hex, arrow, chevron, hourglass) with a unified parametric generator
+- New parameters: Sides (3-8), Skew (-1 to 1), Indent (-1 to 1), Pinch (0-1), Point (0-1)
+- `plankPts()` rewritten: generates n-gon base polygon, applies 4 deformation passes (skew, point, pinch, indent)
+- Old presets kept as shortcut buttons that set slider values
+- Renamed "Geometry" section to "Shape" with description "Piece shape and deformation"
+- Backward compatibility: old presets with integer `P.ps` auto-migrate to parametric values
+- Bug fix: clamped endProximity/centerProximity to [0,1] to prevent self-intersecting geometry when skew + point/pinch combined
+- Fixed copySeed to use toFixed(2) for shape params
+
+**Why:**
+- Hardcoded shapes limited creative range; parametric system allows infinite variations from continuous sliders
+- Users can start from a preset and tweak, or create entirely new shapes
+
+**Files Modified:**
+- `iso-icon-generator.html` — new params, plankPts rewrite, HTML sliders, preset buttons, compat updates
+- `docs/plans/2026-04-08-parametric-shape-design.md` — design doc
+- `docs/plans/2026-04-08-parametric-shape-impl.md` — implementation plan
+
+---
+
+## 2026-04-08 - Per-corner rounding controls
+
+**What Changed:**
+- Added `P.rc` array (4 corner multipliers, default [1,1,1,1]) to parameters
+- Added 4 per-corner sliders (C1–C4) in Spacing section, shown only when Rounding > 0
+- Each corner slider is a 0–1 multiplier on the global rounding value
+- Added "reset" button to restore all corners to 1.0
+- Corner index wraps with `i % 4` for pieces with more/fewer than 4 vertices
+- Preset load handles missing/invalid `rc` gracefully (defaults to [1,1,1,1])
+- Reset button now also resets corner values
+
+**Why:**
+- User requested per-corner rounding in addition to global rounding
+
+**Files Modified:**
+- `iso-icon-generator.html` — new parameters, HTML sliders, rendering logic, preset handling
+
+---
+
+## 2026-04-08 - Add icon size slider, flush-left toolbar
+
+**What Changed:**
+- Added "Icon size" slider (50–200px, default 90) in Structure section to control preview grid icon size
+- Grid uses CSS variable `--icon-size` in `minmax(var(--icon-size,90px),1fr)` for live resizing
+- Removed `margin-left:16px` from `.toolbar` so it sits flush against the left edge
+
+**Why:**
+- User requested ability to change preview icon size
+- User requested toolbar be left-aligned with no margin
+
+**Files Modified:**
+- `iso-icon-generator.html` — CSS variable for grid, new slider, toolbar margin removed
+
+---
+
+## 2026-04-08 - Remove body padding, rename divs, add per-element margins
+
+**What Changed:**
+- Removed `body` padding (set to 0)
+- Renamed `.left` to `.preview`, `.right` to `.toolbar` in CSS and HTML
+- Added `margin-left:16px` and full padding to `.toolbar`
+- Added `margin-right:16px` and `padding-top:16px` to `.preview`
+- Updated `sticky top` from 16px to 0 (no body padding to offset)
+- Updated mobile media query for new class names and margin handling
+
+**Why:**
+- User requested body padding removal with per-element margins instead
+- Class names should reflect purpose (toolbar/preview) not position (left/right)
+
+**Files Modified:**
+- `iso-icon-generator.html` — CSS and HTML class renames, spacing changes
+
+---
+
+## 2026-04-08 - Move control panel to left side, fix spacing
+
+**What Changed:**
+- Moved sidebar panel from right to left using `order:-1`
+- Changed border from left edge to right edge (`border-right` instead of `border-left`)
+- Changed padding from `padding-left:16px` to `padding:0 16px 0 0` for even spacing (right padding only, against the border)
+- Updated mobile media query to reset `border-right` and `padding` instead of `border-left`/`padding-left`
+
+**Why:**
+- User requested panel on left side
+- Fixed uneven spacing around the panel (had padding-left but no padding-right)
+
+**Files Modified:**
+- `iso-icon-generator.html` — CSS changes to `.right` and mobile media query
+
+---
+
+## 2026-04-08 - UX redesign: collapsible sections, tooltips, visual refinement
+
+**What Changed:**
+- Restructured sidebar into 5 collapsible `<details>` sections: Structure, Geometry, Spacing, Export, Presets
+- Added visible page title "Iso Icon Generator"
+- Added `title` tooltips to all parameter labels explaining what each control does
+- Added section descriptions ("Pattern layout and complexity", etc.)
+- Added Reset button to restore all parameters to defaults
+- Added Download SVG button alongside Copy SVG
+- Added accent color (blue) for primary actions and selected states
+- Improved typography: better label contrast (#555 vs #888), monospace value readouts, uppercase section headings
+- Added sidebar background/border for panel definition
+- Made grid columns responsive with `auto-fill, minmax(90px, 1fr)`
+- Added mobile layout (single column below 700px)
+- Increased preset delete button touch target size
+- Added Firefox range input styling (`-moz-range-thumb`)
+- Added delete preset confirmation dialog
+- Added error alert for invalid preset import files
+- Show selected icon seed on initial page load
+
+**Why:**
+- Design critique scored 16/40 on Nielsen's heuristics — critical cognitive overload (6/8 checklist failures), zero discoverability (no tooltips/help), no reset/undo, prototype-level aesthetics
+- Goal: elevate from developer debug panel to refined utilitarian tool (Figma-sidebar feel)
+
+**Files Modified:**
+- `iso-icon-generator.html` — full UI/UX overhaul (CSS, HTML structure, JS additions)
+
+---
+
 ## 2026-04-08 - Two-phase rounding: corners → ellipse
 
 **What Changed:**

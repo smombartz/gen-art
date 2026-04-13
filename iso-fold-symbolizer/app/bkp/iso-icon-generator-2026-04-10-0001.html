@@ -178,15 +178,6 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
 <button onclick="downloadSVG()">Download SVG</button>
 <button onclick="copySeed()">Copy seed</button>
 </div>
-<div style="margin-top:8px;padding-top:8px;border-top:1px solid #e8e8e4">
-<div class="r" style="margin-bottom:6px"><label style="font-size:11px;color:#999">Bulk export</label></div>
-<div style="display:flex;gap:5px;align-items:center">
-<input type="number" id="bulkCount" value="20" min="1" max="500" style="width:60px;font-size:12px;padding:4px 6px;border:1px solid #ccc;border-radius:6px;outline:none;text-align:center">
-<button class="top" style="padding:4px 10px;font-size:12px;border:1px solid #ccc;background:#fff;border-radius:6px;cursor:pointer;white-space:nowrap" onclick="bulkExportGrid()">Grid SVG</button>
-<button class="top" style="padding:4px 10px;font-size:12px;border:1px solid #ccc;background:#fff;border-radius:6px;cursor:pointer;white-space:nowrap" onclick="bulkExportIndividual()">Individual SVGs</button>
-</div>
-<div id="bulkStatus" style="font-size:11px;color:#999;margin-top:4px"></div>
-</div>
 </details>
 
 <details class="section">
@@ -553,7 +544,7 @@ function iconToSVG(icon,sz,bgColor,showGrid){
 }
 
 // --- Shared parametric shape pipeline (local coords) ---
-function pieceVerts(halfL,halfW,polFlip){
+function shapeVerts(halfL,halfW,polFlip){
   var n=Math.round(P.pn);if(n<3)n=3;
   var verts=[];
   for(var i=0;i<n;i++){
@@ -618,7 +609,7 @@ function plankPts(q1,r1,q2,r2,pol){
   function mkpt(a,n){return[mx+ux*a+nx*n,my+uy*a+ny*n]}
   function tag(arr){arr._mx=mx;arr._my=my;arr._ux=ux;arr._uy=uy;arr._nx=nx;arr._ny=ny;arr._halfL=halfL;arr._avgW=halfW;return arr}
 
-  var verts=pieceVerts(halfL,halfW,polNode1);
+  var verts=shapeVerts(halfL,halfW,polNode1);
   var pts=[];
   for(var i=0;i<verts.length;i++) pts.push(mkpt(verts[i][0],verts[i][1]));
   return tag(pts);
@@ -769,7 +760,7 @@ function renderShapePreview(){
   var ratio=P.wd/P.ht,maxR=(sz-pad*2)/2;
   var halfL,halfW;
   if(ratio>1){halfW=maxR;halfL=maxR/ratio}else{halfL=maxR;halfW=maxR*ratio}
-  var verts=pieceVerts(halfL,halfW,false);
+  var verts=shapeVerts(halfL,halfW,false);
   var pts=verts.map(function(v){return[v[0]+sz/2,v[1]+sz/2]});
   var svg;
   if(P.rn>0){
@@ -933,59 +924,6 @@ function downloadSVG(){
   a.href=URL.createObjectURL(blob);
   a.download='iso-icon-'+icon.seed+'.svg';
   a.click();
-}
-
-function bulkExportGrid(){
-  var count=Math.max(1,Math.min(500,+$('bulkCount').value||20));
-  $('bulkStatus').textContent='Generating '+count+' variations…';
-  setTimeout(function(){
-    var seeds=generateUniqueSeeds(count);
-    var icons=seeds.map(function(s){return generateIcon(s)});
-    var iconSz=128,pad=8;
-    var cols=Math.ceil(Math.sqrt(count));
-    var rows=Math.ceil(count/cols);
-    var w=cols*(iconSz+pad)+pad,h=rows*(iconSz+pad)+pad;
-    var parts=['<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'">'];
-    parts.push('<rect width="'+w+'" height="'+h+'" fill="'+(P.bg==='#ffffff'?'#ffffff':P.bg)+'"/>');
-    for(var i=0;i<icons.length;i++){
-      var col=i%cols,row=Math.floor(i/cols);
-      var x=pad+col*(iconSz+pad),y=pad+row*(iconSz+pad);
-      var svg=iconToSVG(icons[i],iconSz,P.bg==='#ffffff'?'transparent':P.bg);
-      // Strip outer <svg> tag and embed as <g> with transform
-      var inner=svg.replace(/<svg[^>]*>/,'').replace(/<\/svg>/,'');
-      parts.push('<g transform="translate('+x+','+y+')">'+inner+'</g>');
-    }
-    parts.push('</svg>');
-    var blob=new Blob([parts.join('')],{type:'image/svg+xml'});
-    var a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download='iso-icons-grid-'+count+'.svg';
-    a.click();
-    $('bulkStatus').textContent='Exported '+icons.length+' icons as grid SVG';
-  },50);
-}
-
-function bulkExportIndividual(){
-  var count=Math.max(1,Math.min(500,+$('bulkCount').value||20));
-  $('bulkStatus').textContent='Generating '+count+' variations…';
-  setTimeout(function(){
-    var seeds=generateUniqueSeeds(count);
-    var icons=seeds.map(function(s){return generateIcon(s)});
-    var bg=P.bg==='#ffffff'?'transparent':P.bg;
-    // Create combined HTML file with all SVGs for easy saving
-    var parts=['<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Iso Icons Export</title>'];
-    parts.push('<style>body{background:#f5f5f0;display:flex;flex-wrap:wrap;gap:8px;padding:16px}svg{background:#fff;border-radius:8px}</style></head><body>');
-    for(var i=0;i<icons.length;i++){
-      parts.push(iconToSVG(icons[i],256,bg));
-    }
-    parts.push('</body></html>');
-    var blob=new Blob([parts.join('')],{type:'text/html'});
-    var a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download='iso-icons-'+count+'.html';
-    a.click();
-    $('bulkStatus').textContent='Exported '+icons.length+' icons as HTML';
-  },50);
 }
 
 function copySeed(){
