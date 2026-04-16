@@ -135,3 +135,53 @@ Always preserve existing log entries. New entries go at the **top** (most recent
 - Scatter slider: ratio between connected tree-growth pieces and randomly placed pieces
 - Fill, taper, gap, rounding controls for piece geometry
 - Batch generation (4-24 icons), grid preview, SVG/seed export
+
+---
+
+## Design Context
+
+### Users
+Designers, generative-art tinkerers, and identity/iconography explorers using the tool to produce hexagonal icon sets from procedural trapezoid pieces. Sessions are exploratory — users push sliders, re-seed, compare variants, copy recipes. The interface is a *workbench*, not a document; it should reward close inspection rather than fatigue the eye.
+
+### Brand Personality
+**Tactile. Precise. Playful.**
+
+Voice: confident and unadorned, like a piece of hardware. No marketing warmth, no hand-holding. Labels are short; values are numeric and monospaced. The interface should feel like a calculator or an OP-1 — an instrument that invites play but respects the operator's intelligence. Emotional goal: *focused delight* — the satisfaction of a well-machined tool, with occasional pops of color that reward looking.
+
+### Aesthetic Direction
+**Reference:** [Thomas McInnis on the Teenage Engineering calculator](https://thomasmcinnis.com/posts/teenage-engineering-calculator/). Tactile buttons with real depth (inset shadows, subtle gradients, pressed-state physics), Swiss-precision typography, numeric monospace readouts, and accent colors used sparingly as functional signal rather than decoration.
+
+**Theme:** Light only. Cream / off-white canvas, light lavender panels, deep charcoal text. Accents (blue / orange / green) are reserved for state, action, and category — never ambient decoration.
+
+**Anti-references:** Generic SaaS / Material. Avoid flat accent-blue-everything, uniform 8px rounded corners, Inter-on-grey, shadcn defaults, Bootstrap button stacks. If the interface could be mistaken for a generic dashboard, it has failed.
+
+### Color Palette
+```
+Accents (state/action)
+  Blue    #59B3F0 → hover #3d9fd4 → active #2b7ab8
+  Orange  #fe562b → hover #e63d12 → active #cc2600
+  Green   #00cb72 → hover #00a85b → active #008545
+
+Canvas & neutrals
+  Cream/off-white   #ece9e6, #ffffff
+  Light lavender    #E0DEEB, #f0eefb, #FCFAFD
+  Gray-blue         #e6e9f3
+  Medium gray       #DADADA, #c2c4cc, #999
+  Charcoal (text)   #232323, #1c1d1e
+
+Secondary accents (sparingly)
+  Muted purple-gray #7D7E8A
+  Dusty rose        #d6567b
+  Light blue-purple #93a2e5
+  Medium blue       #1B84C5
+
+Depth / shadow support
+  #3F3F49, #878E96 (gradient endpoints); rgba(...) for insets and cast shadows
+```
+
+### Design Principles
+1. **Tactile over flat.** Every interactive control has depth — inset channels for sliders, pressed-state displacement for buttons, subtle gradients/shadows that make the eye believe in the object. Flat SaaS rectangles are the anti-pattern.
+2. **Accent as signal, not decoration.** The three accents carry meaning. A sea of neutral cream with one orange button is more powerful than ten colored buttons.
+3. **Numeric, monospaced, unapologetic.** Values are numbers in a monospaced face. No rounding for aesthetics, no hiding precision. The workbench tells the truth.
+4. **Swiss rhythm.** Tight vertical spacing, hierarchy through weight and size rather than dividers and boxes. Labels are small-caps/uppercase-tracked; values dominate.
+5. **Density rewards attention.** This is a controls-heavy tool; don't hide complexity behind progressive disclosure for its own sake. Pack information, but keep the grid honest.

@@ -16,12 +16,6 @@
   --rose:#d6567b;
   --accent:var(--blue);
   --mono:ui-monospace,SFMono-Regular,Menlo,"Roboto Mono",monospace;
-  /* Spacing scale — Swiss rhythm: tight within groups, generous between */
-  --space-xs:4px;   /* label ↔ track, label ↔ value */
-  --space-sm:8px;   /* tight clusters */
-  --space-md:12px;  /* default between controls */
-  --space-lg:20px;  /* between subgroups within a section */
-  --space-xl:28px;  /* between sections */
   /* Soft button elevation — hairline only; wells do the depth work */
   --shadow-hairline:inset 0 1px 0 rgba(255,255,255,.75),0 0.5px 0 rgba(60,60,73,.12);
   --shadow-hairline-hv:inset 0 1px 0 rgba(255,255,255,.85),0 0.5px 0 rgba(60,60,73,.18);
@@ -40,50 +34,35 @@
 body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:var(--cream);color:var(--ink);padding:0}
 .wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
 .preview{flex:1;min-width:380px;margin-right:16px;padding-top:16px}
-.preview-header{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;margin-bottom:20px}
-.preview-header .header-actions{align-self:stretch;align-items:stretch}
+.preview-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .title{
-  font-family:var(--mono);font-size:13px;font-weight:800;
-  letter-spacing:.26em;text-transform:uppercase;
+  font-family:var(--mono);font-size:11px;font-weight:800;
+  letter-spacing:.22em;text-transform:uppercase;
   color:var(--ink-deep);margin:0;
-  padding:0 14px 0 22px;
-  display:flex;align-items:center;align-self:stretch;
+  padding:5px 10px 5px 14px;
   background:linear-gradient(180deg,var(--white) 0%,var(--lav) 100%);
   border:1px solid var(--gray);border-radius:5px;
   box-shadow:var(--shadow-drop),var(--shadow-inset);
   position:relative;
 }
 .title::before{
-  content:'';position:absolute;left:6px;top:50%;transform:translateY(-50%);
-  width:6px;height:62%;background:linear-gradient(180deg,#ff7048 0%,var(--orange) 100%);border-radius:1.5px;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.42),0 0 3px 0 rgba(254,86,43,.3);
+  content:'';position:absolute;left:5px;top:50%;transform:translateY(-50%);
+  width:4px;height:60%;background:var(--orange);border-radius:1px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
 }
-/* Header readout — three uniform cells (TOTAL, UNIQUES, SEED) */
 .readout{
-  display:flex;align-items:stretch;gap:0;
-  font-family:var(--mono);
+  display:flex;align-items:center;gap:0;
+  font-family:var(--mono);font-size:11px;
   background:var(--well-bg);
-  border:none;border-radius:7px;
+  border:1px solid rgba(60,60,73,.1);border-radius:4px;
   box-shadow:var(--well-shadow);
   padding:0;overflow:hidden;flex:1;min-width:0;
 }
-.readout-cell{
-  padding:6px 12px;display:flex;flex-direction:column;align-items:flex-start;
-  justify-content:center;gap:2px;min-width:0;
-}
+.readout-cell{padding:5px 10px;display:flex;align-items:center;gap:6px;min-width:0}
 .readout-cell + .readout-cell{border-left:1px solid rgba(60,60,73,.18);box-shadow:inset 1px 0 0 rgba(255,255,255,.35)}
-.readout-label{
-  font-size:8.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;
-  color:var(--gray-dim);line-height:1;
-}
-.readout-value{
-  font-size:12px;font-weight:700;color:var(--ink-deep);line-height:1.05;
-  letter-spacing:.015em;font-variant-numeric:tabular-nums;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;
-}
-.readout-value.seed{min-width:0}
-.readout-value.counting{animation:readoutPulse 1.4s ease-in-out infinite}
-@keyframes readoutPulse{0%,100%{opacity:.5}50%{opacity:1}}
+.readout-label{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-dim)}
+.readout-value{font-size:11px;font-weight:700;color:var(--ink-deep);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.readout-value.seed{min-width:0;flex:1}
 .header-meta{font-size:12px;color:#aaa;white-space:nowrap}
 .preview-header .seed-display{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .header-actions{display:flex;gap:6px;margin-left:auto}
@@ -92,10 +71,9 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:va
 
 /* Primary — Generate (orange, the "=" key) */
 .gen{
-  padding:0 18px;min-height:32px;
+  padding:9px 18px;
   font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
   color:#fff;white-space:nowrap;cursor:pointer;
-  display:inline-flex;align-items:center;justify-content:center;
   background:linear-gradient(180deg,#ff7048 0%,var(--orange) 100%);
   border:1px solid var(--orange-ac);border-radius:6px;
   box-shadow:var(--shadow-hairline-on);
@@ -106,28 +84,16 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:va
 
 /* Secondary — tactile cream (Reset, Load more, Copy SVG, Download SVG, etc.) */
 .btn,.gen.reset,.top>button{
-  padding:0 13px;min-height:28px;
+  padding:7px 13px;
   font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
   color:var(--ink);white-space:nowrap;cursor:pointer;
-  display:inline-flex;align-items:center;justify-content:center;
   background:linear-gradient(180deg,var(--white) 0%,var(--lav) 100%);
   border:1px solid var(--gray);border-radius:6px;
   box-shadow:var(--shadow-hairline);
   transition:transform .06s ease-out,box-shadow .1s ease-out,background .1s ease-out;
 }
-.btn:hover,.gen.reset:hover,.top>button:hover{
-  color:#fff;
-  background:linear-gradient(180deg,#7cc6f5 0%,var(--blue) 100%);
-  border-color:var(--blue-ac);
-  box-shadow:var(--shadow-hairline-on);
-}
-.btn:active,.gen.reset:active,.top>button:active{
-  transform:translateY(1px);
-  color:#fff;
-  background:linear-gradient(180deg,var(--blue) 0%,var(--blue-hv) 100%);
-  border-color:var(--blue-ac);
-  box-shadow:var(--shadow-press);
-}
+.btn:hover,.gen.reset:hover,.top>button:hover{background:linear-gradient(180deg,var(--lav-pale) 0%,var(--lav-deep) 100%);box-shadow:var(--shadow-hairline-hv)}
+.btn:active,.gen.reset:active,.top>button:active{transform:translateY(1px);background:var(--lav-deep);box-shadow:var(--shadow-press)}
 
 /* Commit — green save */
 .commit{
@@ -155,19 +121,8 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:va
   box-shadow:var(--shadow-hairline);
   transition:transform .06s ease-out,box-shadow .1s ease-out,background .1s ease-out;
 }
-.bb button:hover{
-  color:#fff;
-  background:linear-gradient(180deg,#7cc6f5 0%,var(--blue) 100%);
-  border-color:var(--blue-ac);
-  box-shadow:var(--shadow-hairline-on);
-}
-.bb button:active{
-  transform:translateY(1px);
-  color:#fff;
-  background:linear-gradient(180deg,var(--blue) 0%,var(--blue-hv) 100%);
-  border-color:var(--blue-ac);
-  box-shadow:var(--shadow-press);
-}
+.bb button:hover{background:linear-gradient(180deg,var(--lav-pale) 0%,var(--lav-deep) 100%);box-shadow:var(--shadow-hairline-hv)}
+.bb button:active{transform:translateY(1px);background:var(--lav-deep);box-shadow:var(--shadow-press)}
 .bb button.on{
   color:#fff;
   background:linear-gradient(180deg,var(--blue) 0%,var(--blue-hv) 100%);
@@ -194,51 +149,31 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:va
   box-shadow:inset 0 1px 0 rgba(255,255,255,.5);
   transition:all .08s ease-out;
 }
-.micro:hover{color:#fff;background:var(--blue);border-color:var(--blue-ac);box-shadow:inset 0 1px 0 rgba(255,255,255,.35)}
-.micro:active{background:var(--blue-hv);box-shadow:inset 0 1px 2px rgba(0,0,0,.25)}
+.micro:hover{color:var(--ink);background:var(--lav);border-color:var(--gray)}
+.micro:active{background:var(--lav-deep);box-shadow:inset 0 1px 2px rgba(60,60,73,.15)}
 .micro.on{color:#fff;background:var(--blue);border-color:var(--blue-ac);box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
-.micro.on:hover{background:var(--blue-hv)}
 
-/* Preset tokens — recessed well matching .bb */
-.preset-tokens{
-  display:flex;gap:4px;flex-wrap:wrap;
-  padding:5px;border-radius:7px;
-  background:var(--well-bg);
-  box-shadow:var(--well-shadow);
-}
-.preset-token{
-  padding:5px 10px;min-width:30px;position:relative;
-  font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;
+/* Preset row */
+.preset-item{display:flex;align-items:center;gap:4px;margin-bottom:4px}
+.preset-item button{
+  padding:4px 9px;
+  font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
   color:var(--ink);cursor:pointer;
   background:linear-gradient(180deg,var(--white) 0%,var(--lav) 100%);
   border:1px solid var(--gray);border-radius:4px;
-  box-shadow:var(--shadow-hairline);
+  box-shadow:var(--shadow-drop),var(--shadow-inset);
   transition:transform .06s ease-out,box-shadow .1s ease-out,background .1s ease-out;
 }
-.preset-token:hover{
-  color:#fff;
-  background:linear-gradient(180deg,#7cc6f5 0%,var(--blue) 100%);
-  border-color:var(--blue-ac);
-  box-shadow:var(--shadow-hairline-on);
+.preset-item button:hover{background:linear-gradient(180deg,var(--lav-pale) 0%,var(--lav-deep) 100%)}
+.preset-item button:active{transform:translateY(1px);box-shadow:var(--shadow-press)}
+.preset-item .preset-name{flex:1;font-size:12px;cursor:pointer;padding:3px 6px;border-radius:5px;font-family:var(--mono);letter-spacing:.02em}
+.preset-item .preset-name:hover{background:var(--lav)}
+.preset-item .del{
+  color:var(--gray-dim);font-size:14px;font-weight:400;letter-spacing:0;text-transform:none;
+  padding:2px 8px;min-width:26px;
+  background:transparent;border-color:transparent;box-shadow:none;
 }
-.preset-token:active{
-  transform:translateY(1px);
-  color:#fff;
-  background:linear-gradient(180deg,var(--blue) 0%,var(--blue-hv) 100%);
-  border-color:var(--blue-ac);
-  box-shadow:var(--shadow-press);
-}
-.preset-del{
-  display:none;position:absolute;top:-5px;right:-5px;
-  width:14px;height:14px;line-height:13px;text-align:center;
-  font-size:9px;font-weight:700;font-family:system-ui;
-  color:#fff;background:var(--rose);
-  border:none;border-radius:50%;
-  box-shadow:0 1px 2px rgba(0,0,0,.3);
-  cursor:pointer;padding:0;
-}
-.preset-token:hover .preset-del{display:block}
-.preset-del:hover{background:var(--orange-ac)}
+.preset-item .del:hover{color:var(--rose);background:rgba(214,86,123,.08);border-color:rgba(214,86,123,.2);box-shadow:none}
 
 /* ===== Layout / grid ===== */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--icon-size,160px),1fr));gap:10px;margin-bottom:12px}
@@ -252,21 +187,17 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:va
 .grid-item svg{width:100%;height:100%;position:relative;z-index:1}
 .grid-item:hover{background:rgba(224,222,235,.45);border-color:rgba(60,60,73,.08)}
 .grid-item.selected{
-  background:linear-gradient(180deg,var(--lav-pale) 0%,var(--lav) 100%);
-  border-color:rgba(60,60,73,.16);
-  box-shadow:inset 0 2px 4.5px rgba(60,60,73,.2),
-             inset 0 -1.5px 0 rgba(255,255,255,.78),
-             inset 1px 0 0 rgba(60,60,73,.06),
-             inset -1px 0 0 rgba(60,60,73,.06);
+  background:var(--lav-pale);
+  border-color:rgba(60,60,73,.12);
+  box-shadow:inset 0 1.5px 3px rgba(60,60,73,.12),inset 0 -1px 0 rgba(255,255,255,.6);
 }
-/* Corner ticks on selected — slightly thicker, more embedded */
+/* Corner ticks on selected */
 .grid-item.selected::before,.grid-item.selected::after{
-  content:'';position:absolute;width:10px;height:10px;z-index:2;
+  content:'';position:absolute;width:8px;height:8px;z-index:2;
   border-color:var(--blue);
-  filter:drop-shadow(0 0.5px 0 rgba(255,255,255,.6));
 }
-.grid-item.selected::before{top:6px;left:6px;border-top:2px solid;border-left:2px solid;border-top-left-radius:2px}
-.grid-item.selected::after{bottom:6px;right:6px;border-bottom:2px solid;border-right:2px solid;border-bottom-right-radius:2px}
+.grid-item.selected::before{top:5px;left:5px;border-top:1.5px solid;border-left:1.5px solid;border-top-left-radius:2px}
+.grid-item.selected::after{bottom:5px;right:5px;border-bottom:1.5px solid;border-right:1.5px solid;border-bottom-right-radius:2px}
 .grid-item .seed{
   position:absolute;bottom:4px;left:6px;z-index:3;
   font-size:9px;color:var(--gray-dim);font-family:var(--mono);
@@ -276,151 +207,75 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:va
 .toolbar{
   flex:0 0 282px;position:sticky;top:0;align-self:flex-start;
   background:linear-gradient(180deg,var(--lav-pale) 0%,var(--lav) 100%);
-  border-right:1px solid var(--gray);
-  box-shadow:var(--shadow-drop),var(--shadow-inset);
+  border-right:1px solid var(--lav-deep);
+  box-shadow:inset 1px 0 0 rgba(255,255,255,.9),inset -1px 0 0 rgba(60,60,73,.06),1px 0 0 rgba(60,60,73,.04);
   padding:18px 16px;order:-1;max-height:100vh;overflow-y:auto;
-  scrollbar-width:none;
 }
-.toolbar::-webkit-scrollbar{display:none;
-}
-.section{border-bottom:1px solid #e2dfe8;padding:14px 0 18px;position:relative}
-.section[open]{padding-bottom:20px}
-/* Engraved rule — light gray incision + bright highlight below reads as carved into the panel */
-.section::after{content:'';position:absolute;left:0;right:0;bottom:-2px;height:1px;background:#fff}
-.section:first-of-type{padding-top:6px}
-.section:last-child{border-bottom:none;padding-bottom:8px}
+.section{border-bottom:1px solid rgba(60,60,73,.1);padding:12px 0;position:relative}
+.section::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;background:rgba(255,255,255,.8)}
+.section:last-child{border-bottom:none}
 .section:last-child::after{display:none}
 .section summary{
   font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;
-  color:var(--ink);cursor:pointer;padding:2px 0;
+  color:var(--ink);cursor:pointer;padding:4px 0 2px;
   user-select:none;list-style:none;display:flex;align-items:center;gap:8px;
   font-family:var(--mono);position:relative;
 }
 .section summary::-webkit-details-marker{display:none}
 .section summary::before{
-  content:'';display:inline-block;width:5px;height:12px;
-  background:var(--blue);border-radius:1.5px;
-  box-shadow:0 0 0 0.5px rgba(60,60,73,.25),inset 0 1px 0 rgba(255,255,255,.38);
-  transition:background .18s ease-out,transform .15s,box-shadow .18s ease-out;
+  content:'';display:inline-block;width:4px;height:10px;
+  background:var(--blue);border-radius:1px;
+  box-shadow:0 0 0 0.5px rgba(60,60,73,.25),inset 0 1px 0 rgba(255,255,255,.35);
+  transition:background .15s,transform .15s;
 }
-.section[open] summary::before{
-  background:linear-gradient(180deg,#ff7048 0%,var(--orange) 100%);
-  box-shadow:0 0 0 0.5px rgba(60,60,73,.25),
-             inset 0 1px 0 rgba(255,255,255,.55),
-             0 0 4px 0 rgba(254,86,43,.55),
-             0 0 9px 0 rgba(254,86,43,.28);
-}
+.section[open] summary::before{background:var(--orange)}
 .section summary:hover::before{transform:scaleY(1.15)}
-.section-desc{font-size:11px;color:var(--gray-dim);margin:4px 0 14px;letter-spacing:.01em;font-style:italic}
+.section-desc{font-size:11px;color:var(--gray-dim);margin:6px 0 10px;letter-spacing:.01em;font-style:italic}
 .sub-label{
   font-family:var(--mono);font-size:9px;font-weight:700;
   letter-spacing:.14em;text-transform:uppercase;color:var(--gray-dim);
   margin-bottom:2px;
 }
-.s{margin-bottom:var(--space-md)}
-.s:last-child{margin-bottom:0}
-.s.s-end{margin-bottom:var(--space-lg)}
-.s label{font-size:12px;color:#555;display:block;margin-bottom:var(--space-xs);letter-spacing:.01em}
-.s .r{display:flex;justify-content:space-between;align-items:center;gap:var(--space-sm)}
-.s .r > label{margin-bottom:0;flex:1;min-width:0}
+.s{margin-bottom:11px}
+.s label{font-size:12px;color:#555;display:block;margin-bottom:3px;cursor:help;letter-spacing:.01em}
+.s .r{display:flex;justify-content:space-between;align-items:center}
 .s .r span{font-size:12px;font-weight:700;font-family:var(--mono);min-width:36px;text-align:right;color:var(--ink)}
-/* Inline micro toggle sitting next to a value (mirrors the Rounding+corners pattern) */
-.s .r .r-aux{display:flex;align-items:center;gap:var(--space-sm)}
-/* Sliders — deep dark groove with chrome-rim edge highlight, light tactile thumb that lights blue on hover/active */
+/* Sliders — inset channel, tactile thumb */
 input[type=range]{
-  width:100%;height:22px;-webkit-appearance:none;appearance:none;
+  width:100%;height:18px;-webkit-appearance:none;appearance:none;
   background:transparent;outline:none;margin-top:4px;cursor:pointer;
 }
-/* Track (groove) — charcoal interior with a subtle vertical sheen, bright rim on outer contour.
-   3-stop gradient: dark at the top (lip shadow), lighter in the middle (ambient catches the curve),
-   back to slightly darker at the bottom (before the bright reflected rim takes over). */
 input[type=range]::-webkit-slider-runnable-track{
-  height:8px;border-radius:4px;
-  background:linear-gradient(180deg,#262630 0%,#464651 48%,#363640 100%);
-  border:1px solid rgba(0,0,0,.45);
-  box-shadow:
-    inset 0 1.5px 2px rgba(0,0,0,.45),
-    inset 0 -1.5px 1px rgba(255,255,255,.09),
-    0 1px 0 rgba(255,255,255,.78);
+  height:6px;border-radius:3px;
+  background:linear-gradient(180deg,#d9d7e3 0%,#ebe9f2 100%);
+  box-shadow:inset 0 1px 1.5px rgba(60,60,73,.13),inset 0 -0.5px 0 rgba(255,255,255,.7),0 0.5px 0 rgba(255,255,255,.6);
+  border:1px solid rgba(60,60,73,.1);
 }
 input[type=range]::-moz-range-track{
-  height:8px;border-radius:4px;
-  background:linear-gradient(180deg,#262630 0%,#464651 48%,#363640 100%);
-  border:1px solid rgba(0,0,0,.45);
-  box-shadow:
-    inset 0 1.5px 2px rgba(0,0,0,.45),
-    inset 0 -1.5px 1px rgba(255,255,255,.09),
-    0 1px 0 rgba(255,255,255,.78);
+  height:6px;border-radius:3px;
+  background:linear-gradient(180deg,#d9d7e3 0%,#ebe9f2 100%);
+  box-shadow:inset 0 1px 1.5px rgba(60,60,73,.13),inset 0 -0.5px 0 rgba(255,255,255,.7);
+  border:1px solid rgba(60,60,73,.1);
 }
-/* Thumb — light chrome dome by default; border + drop shadow match the square buttons' weight */
 input[type=range]::-webkit-slider-thumb{
-  -webkit-appearance:none;width:18px;height:18px;border-radius:50%;
-  background:radial-gradient(circle at 35% 28%,#ffffff 0%,#ece9f2 58%,#d6d3df 100%);
-  border:1px solid var(--gray);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.9),
-    inset 0 -1px 1px rgba(60,60,73,.12),
-    0 0.5px 0 rgba(60,60,73,.18);
+  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#4a4a56 0%,var(--ink-deep) 55%,#0a0a0c 100%);
+  border:1px solid rgba(0,0,0,.5);
+  box-shadow:0 1.5px 2.5px rgba(0,0,0,.35),0 0 0 0.5px rgba(255,255,255,.08) inset;
   cursor:grab;margin-top:-6px;
-  transition:transform .08s ease-out,box-shadow .14s ease-out,background .14s ease-out,border-color .14s ease-out;
+  transition:transform .08s ease-out,box-shadow .1s ease-out;
 }
 input[type=range]::-moz-range-thumb{
-  width:18px;height:18px;border-radius:50%;
-  background:radial-gradient(circle at 35% 28%,#ffffff 0%,#ece9f2 58%,#d6d3df 100%);
-  border:1px solid var(--gray);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.9),
-    inset 0 -1px 1px rgba(60,60,73,.12),
-    0 0.5px 0 rgba(60,60,73,.18);
+  width:16px;height:16px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#4a4a56 0%,var(--ink-deep) 55%,#0a0a0c 100%);
+  border:1px solid rgba(0,0,0,.5);
+  box-shadow:0 1.5px 2.5px rgba(0,0,0,.35);
   cursor:grab;
-  transition:transform .08s ease-out,box-shadow .14s ease-out,background .14s ease-out,border-color .14s ease-out;
 }
-/* Hover — blue, matches .btn:hover weight */
-input[type=range]:hover::-webkit-slider-thumb{
-  background:radial-gradient(circle at 35% 28%,#b6dcf5 0%,var(--blue) 60%,var(--blue-ac) 100%);
-  border-color:var(--blue-ac);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.45),
-    inset 0 -1px 1px rgba(0,0,0,.15),
-    0 0.5px 0 rgba(0,0,0,.22);
-}
-input[type=range]:hover::-moz-range-thumb{
-  background:radial-gradient(circle at 35% 28%,#b6dcf5 0%,var(--blue) 60%,var(--blue-ac) 100%);
-  border-color:var(--blue-ac);
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,.45),
-    inset 0 -1px 1px rgba(0,0,0,.15),
-    0 0.5px 0 rgba(0,0,0,.22);
-}
-/* Active — deeper blue, pressed */
-input[type=range]:active::-webkit-slider-thumb{
-  cursor:grabbing;transform:scale(0.94);
-  background:radial-gradient(circle at 35% 28%,var(--blue) 0%,var(--blue-hv) 55%,var(--blue-ac) 100%);
-  border-color:var(--blue-ac);
-  box-shadow:
-    inset 0 1.5px 2px rgba(0,0,0,.25),
-    inset 0 1px 0 rgba(255,255,255,.2);
-}
-input[type=range]:active::-moz-range-thumb{
-  cursor:grabbing;transform:scale(0.94);
-  background:radial-gradient(circle at 35% 28%,var(--blue) 0%,var(--blue-hv) 55%,var(--blue-ac) 100%);
-  border-color:var(--blue-ac);
-  box-shadow:
-    inset 0 1.5px 2px rgba(0,0,0,.25),
-    inset 0 1px 0 rgba(255,255,255,.2);
-}
-input[type=range]:focus-visible::-webkit-slider-thumb{
-  box-shadow:
-    0 1.5px 3px rgba(0,0,0,.38),
-    inset 0 1px 0 rgba(255,255,255,.95),
-    0 0 0 3px rgba(89,179,240,.45);
-}
-input[type=range]:focus-visible::-moz-range-thumb{
-  box-shadow:
-    0 1.5px 3px rgba(0,0,0,.38),
-    inset 0 1px 0 rgba(255,255,255,.95),
-    0 0 0 3px rgba(89,179,240,.45);
-}
+input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 2px 4px rgba(0,0,0,.4)}
+input[type=range]:active::-webkit-slider-thumb{cursor:grabbing;transform:scale(0.94);box-shadow:0 1px 1.5px rgba(0,0,0,.5)}
+input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 1.5px 2.5px rgba(0,0,0,.35),0 0 0 3px rgba(89,179,240,.4)}
+input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 1.5px 2.5px rgba(0,0,0,.35),0 0 0 3px rgba(89,179,240,.4)}
 
 /* Text & number inputs — inset channel matching slider rail */
 input[type=text],input[type=number]{
@@ -457,10 +312,13 @@ button:disabled,button[disabled]{
 }
 
 /* Inline labels — help cursor only when title attribute is present */
+.s label[title]{cursor:help}
 
 /* Bulk export status line */
 #bulkStatus{font-family:var(--mono);font-size:10px;color:var(--gray-dim);margin-top:6px;letter-spacing:.04em;text-transform:uppercase;min-height:12px}
 
+/* Total pieces — make it read as an auxiliary readout */
+#tpv{color:var(--blue-ac)}
 @media(max-width:700px){
 .wrap{flex-direction:column}
 .preview{min-width:auto;margin-right:16px;margin-left:16px}
@@ -474,9 +332,8 @@ button:disabled,button[disabled]{
 <div class="preview-header">
 <h1 class="title">Iso Icon Generator</h1>
 <div class="readout">
-<div class="readout-cell"><span class="readout-label">Total Tiles</span><span class="readout-value" id="tpv">4</span></div>
-<div class="readout-cell"><span class="readout-label">Uniques</span><span class="readout-value" id="uvv">—</span></div>
-<div class="readout-cell" style="flex:1;min-width:0"><span class="readout-label">Seed</span><span class="readout-value seed" id="seedInfo">—</span></div>
+<div class="readout-cell"><span class="readout-label">UNI</span><span class="readout-value" id="uvv">—</span></div>
+<div class="readout-cell" style="flex:1;min-width:0"><span class="readout-label">SEED</span><span class="readout-value seed" id="seedInfo">—</span></div>
 </div>
 <div class="header-actions">
 <button class="gen" onclick="generateBatch()">Generate</button>
@@ -495,50 +352,56 @@ button:disabled,button[disabled]{
 <div class="s"><label title="How the arm pattern is rotated/mirrored to fill the shape">Symmetry</label>
 <div class="bb" id="symb"></div></div>
 
-<div class="s s-end"><label title="Boundary outline that contains the icon">Outline</label>
+<div class="s"><label title="Boundary outline that contains the icon">Outline</label>
 <div class="bb" id="shb"></div></div>
 
-<div class="s"><div class="r"><label title="Number of connected tiles grown from a seed point">Arm size</label><span id="asv">4</span></div>
+<div class="s"><div class="r"><label title="Number of connected pieces grown from a seed point">Arm size</label><span id="asv">4</span></div>
 <input type="range" min="1" max="20" step="1" value="4" id="as" oninput="P.as=+this.value;updPieces();throttledRegenerate()"></div>
 
-<div class="s"><div class="r"><label title="Radius of the triangular lattice (larger = more room for tiles)">Grid size</label><span id="grv">4</span></div>
+<div class="s"><div class="r"><label title="Radius of the triangular lattice (larger = more room for pieces)">Grid size</label><span id="grv">4</span></div>
 <input type="range" min="2" max="7" step="1" value="4" id="gr" oninput="P.gr=+this.value;$('grv').textContent=P.gr;throttledRegenerate()"></div>
 
-<div class="s s-end"><div class="r"><label title="Additional tiles placed randomly (not connected to the arm)">Scatter</label><span id="scv">0</span></div>
+<div class="s"><div class="r"><label title="Additional pieces placed randomly (not connected to the arm)">Scatter</label><span id="scv">0</span></div>
 <input type="range" min="0" max="20" step="1" value="0" id="sc" oninput="P.sc=+this.value;updPieces();throttledRegenerate()"></div>
 
-<div class="s"><div class="r"><label title="Size of each icon in the preview grid">Preview size</label><span id="isv">160</span></div>
-<input type="range" min="50" max="200" step="5" value="160" id="is" oninput="document.querySelector('.grid').style.setProperty('--icon-size',this.value+'px');$('isv').textContent=this.value;renderShapePreview()"></div>
+<div class="s"><div class="r"><label title="Size of each icon in the preview grid">Icon size</label><span id="isv">160</span></div>
+<input type="range" min="50" max="200" step="5" value="160" id="is" oninput="document.querySelector('.grid').style.setProperty('--icon-size',this.value+'px');$('isv').textContent=this.value"></div>
+
+<div class="s"><div class="r"><label>Total pieces</label><span id="tpv">4</span></div></div>
 </details>
 
 <details class="section" open>
-<summary>Tiles</summary>
-<p class="section-desc">Tile shape and deformation</p>
+<summary>Shape</summary>
+<p class="section-desc">Piece shape and deformation</p>
 
 <div id="shapePreview" style="display:flex;justify-content:center;padding:6px 0 8px"></div>
 
 <div class="s"><div class="r"><label title="Number of sides for the base polygon">Sides</label><span id="pnv">4</span></div>
 <input type="range" min="3" max="8" step="1" value="4" id="pn" oninput="P.pn=+this.value;$('pnv').textContent=this.value;throttledRerender()"></div>
 
-<div class="s"><div class="r"><label title="How wide each tile is perpendicular to its edge">Width</label><span id="wv">0.88</span></div>
+<div class="s"><div class="r"><label title="How wide each piece is perpendicular to its edge">Width</label><span id="wv">0.88</span></div>
 <input type="range" min="0.1" max="4.0" step="0.01" value="0.88" id="wd" oninput="onWidthChange(+this.value)"></div>
 
-<div class="s s-end"><div class="r"><label title="How long each tile is along its edge">Height</label><div class="r-aux"><button id="lkBtn" class="micro" title="Link width and height" onclick="toggleLink()">link</button><span id="hv">0.85</span></div></div>
+<div style="text-align:right;margin:-6px 0 2px">
+<button id="lkBtn" class="micro" title="Link width and height" onclick="toggleLink()">link</button>
+</div>
+
+<div class="s"><div class="r"><label title="How long each piece is along its edge">Height</label><span id="hv">0.85</span></div>
 <input type="range" min="0.1" max="4.0" step="0.01" value="0.85" id="ht" oninput="onHeightChange(+this.value)"></div>
 
-<div class="s"><div class="r"><label title="Polarity-aware taper: narrows one end of each tile, alternating direction at adjacent nodes">Trapeze</label><span id="pzv">0.25</span></div>
+<div class="s"><div class="r"><label title="Polarity-aware taper: narrows one end of each piece, alternating direction at adjacent nodes">Trapeze</label><span id="pzv">0.25</span></div>
 <input type="range" min="0" max="1" step="0.01" value="0.25" id="pz" oninput="P.pz=+this.value;$('pzv').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
 
-<div class="s"><div class="r"><label title="Shear/lean the tile along its edge axis">Skew</label><span id="pkv">0</span></div>
+<div class="s"><div class="r"><label title="Shear/lean the shape along its edge axis">Skew</label><span id="pkv">0</span></div>
 <input type="range" min="-1" max="1" step="0.01" value="0" id="pk" oninput="P.pk=+this.value;$('pkv').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
 
 <div class="s"><div class="r"><label title="Push edge midpoints inward (+) or outward (-)">Indent</label><span id="piv">0</span></div>
 <input type="range" min="-1" max="1" step="0.01" value="0" id="pi" oninput="P.pi=+this.value;$('piv').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
 
-<div class="s s-end"><div class="r"><label title="Rotate the tile in degrees">Rotate</label><span id="prv">0</span></div>
+<div class="s"><div class="r"><label title="Rotate the piece shape in degrees">Rotate</label><span id="prv">0</span></div>
 <input type="range" min="0" max="360" step="1" value="0" id="pr" oninput="P.pr=+this.value;$('prv').textContent=this.value;throttledRerender()"></div>
 
-<div class="s"><div class="r"><label title="Corner rounding (0-0.5) then morph toward ellipse (0.5-1.0)">Rounding</label><div class="r-aux"><button id="pcBtn" class="micro" title="Toggle per-corner rounding" onclick="toggleCornerSliders()">corners</button><span id="rv">0</span></div></div>
+<div class="s"><div class="r"><label title="Corner rounding (0-0.5) then morph toward ellipse (0.5-1.0)">Rounding</label><div style="display:flex;align-items:center;gap:6px"><button id="pcBtn" class="micro" title="Toggle per-corner rounding" onclick="toggleCornerSliders()">corners</button><span id="rv">0</span></div></div>
 <input type="range" min="0" max="1" step="0.01" value="0" id="rn" oninput="P.rn=+this.value;throttledRerender()"></div>
 
 <div class="s" id="cornerSliders" style="display:none;margin-left:8px">
@@ -557,29 +420,25 @@ button:disabled,button[disabled]{
 
 <details class="section">
 <summary>Spacing</summary>
-<p class="section-desc">Gaps and insets between tiles</p>
+<p class="section-desc">Gaps and insets between pieces</p>
 
-<div class="s"><div class="r"><label title="Offset each tile outward from center">Gap</label><span id="gv">0</span></div>
+<div class="s"><div class="r"><label title="Offset each piece outward from center">Gap</label><span id="gv">0</span></div>
 <input type="range" min="-100" max="100" step="1" value="0" id="ga" oninput="P.ga=+this.value;throttledRerender()"></div>
 
-<div class="s"><div class="r"><label title="Inset/shrink each tile toward its center">Spacing</label><span id="spv">0</span></div>
+<div class="s"><div class="r"><label title="Inset/shrink each piece toward its center">Spacing</label><span id="spv">0</span></div>
 <input type="range" min="0" max="100" step="0.5" value="0" id="sp" oninput="P.sp=+this.value;throttledRerender()"></div>
 </details>
 
 <details class="section">
 <summary>Export</summary>
-<p class="section-desc">Copy, download, or batch export</p>
-
-<div class="sub-label">Selected</div>
-<div class="top" style="margin-top:var(--space-xs)">
+<div class="top">
 <button id="cp" onclick="copySVG()">Copy SVG</button>
 <button onclick="downloadSVG()">Download SVG</button>
 <button onclick="copySeed()">Copy seed</button>
 </div>
-
-<div style="margin-top:var(--space-lg)">
-<div class="sub-label">Bulk</div>
-<div style="display:flex;gap:6px;align-items:center;margin-top:var(--space-xs)">
+<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(60,60,73,.1);box-shadow:0 -1px 0 rgba(255,255,255,.8)">
+<div class="sub-label">Bulk export</div>
+<div style="display:flex;gap:6px;align-items:center;margin-top:4px">
 <input type="number" id="bulkCount" value="20" min="1" max="500" style="width:64px">
 <button class="btn" onclick="bulkExportGrid()">Grid SVG</button>
 <button class="btn" onclick="bulkExportIndividual()">Individual</button>
@@ -590,8 +449,7 @@ button:disabled,button[disabled]{
 
 <details class="section">
 <summary>Presets</summary>
-<p class="section-desc">Save and recall parameter sets</p>
-<div style="display:flex;gap:6px;margin-bottom:var(--space-md)">
+<div style="display:flex;gap:5px;margin-bottom:6px;padding-top:4px">
 <input type="text" id="presetName" placeholder="Preset name" style="flex:1;min-width:0">
 <button class="btn commit" onclick="savePreset()">Save</button>
 </div>
@@ -602,14 +460,8 @@ button:disabled,button[disabled]{
 </div>
 
 <script>
-var P_DEFAULTS={sym:0,as:4,wd:0.88,ht:0.85,pz:0.25,ga:0,sp:0,rn:0,rc:[1,1,1,1],bg:'#ffffff',sc:0,gr:4,sh:6,pn:4,pk:0,pi:0,pr:0,lk:0};
-function cloneDefaults(){
-  var o={};Object.keys(P_DEFAULTS).forEach(function(k){
-    var v=P_DEFAULTS[k];o[k]=Array.isArray(v)?v.slice():v;
-  });return o;
-}
-var P=cloneDefaults();
-var BATCH=50;
+var P={sym:0,as:4,wd:0.88,ht:0.85,pz:0.25,ga:0,sp:0,rn:0,rc:[1,1,1,1],bg:'#ffffff',sc:0,gr:4,sh:6,pn:4,pk:0,pi:0,pr:0,lk:0};
+var BATCH=20;
 function totalPieces(){return P.as+P.sc}
 var allIcons=[];
 var allSeeds=[];
@@ -1004,21 +856,6 @@ function pieceVerts(halfL,halfW,polFlip){
       verts[i][1]=rcy+dx*sinR+dy*cosR;
     }
   }
-  // Merge coincident consecutive vertices — trapeze at 1.0 collapses one side
-  // into a point; without this, rounding divides by zero-length edges → NaN path.
-  var EPS2=1e-4;
-  var merged=[verts[0]];
-  for(var i=1;i<verts.length;i++){
-    var lp=merged[merged.length-1],cp=verts[i];
-    var dxm=cp[0]-lp[0],dym=cp[1]-lp[1];
-    if(dxm*dxm+dym*dym>EPS2) merged.push(cp);
-  }
-  if(merged.length>2){
-    var fm=merged[0],lm=merged[merged.length-1];
-    var dxw=fm[0]-lm[0],dyw=fm[1]-lm[1];
-    if(dxw*dxw+dyw*dyw<=EPS2) merged.pop();
-  }
-  if(merged.length>=3) verts=merged;
   return verts;
 }
 
@@ -1059,9 +896,7 @@ var _countRaf=0;
 function countVariations(){
   clearTimeout(_countTimer);
   if(_countRaf){cancelAnimationFrame(_countRaf);_countRaf=0}
-  var uvv=$('uvv');
-  function setUni(v,counting){uvv.textContent=v;uvv.classList.toggle('counting',!!counting)}
-  setUni('···',true);
+  $('uvv').textContent='counting…';
   _countTimer=setTimeout(function(){
     var seen={},unique=0,stale=0,i=0,maxSamples=5000,chunkSize=200;
     function chunk(){
@@ -1071,10 +906,10 @@ function countVariations(){
         var icon=generateIcon(seed);
         var fp=iconFingerprint(icon);
         if(!seen[fp]){seen[fp]=1;unique++;stale=0}
-        else{stale++;if(stale>500){setUni(unique,false);return}}
+        else{stale++;if(stale>500){$('uvv').textContent=unique;return}}
       }
       if(i<maxSamples){_countRaf=requestAnimationFrame(chunk)}
-      else{setUni(unique+'+',false)}
+      else{$('uvv').textContent=unique+'+'}
     }
     _countRaf=requestAnimationFrame(chunk);
   },500);
@@ -1116,23 +951,21 @@ function loadMore(){
 }
 
 function regenerate(){
-  // Rebuild icons for current params, deduping identical fingerprints for display.
-  // allSeeds is the authoritative seed pool and must NOT be mutated here — a
-  // preset that collapses many fingerprints would otherwise permanently shrink
-  // the pool, so switching back to a more varied preset loses seeds.
+  // Rebuild from seeds, dedup — single generation pass
   var seen={};
-  var validIcons=[];
+  var validSeeds=[],validIcons=[];
   for(var i=0;i<allSeeds.length;i++){
     var icon=generateIcon(allSeeds[i]);
     var fp=iconFingerprint(icon);
     if(seen[fp])continue;
     seen[fp]=1;
+    validSeeds.push(allSeeds[i]);
     validIcons.push(icon);
   }
+  allSeeds=validSeeds;
   allIcons=validIcons;
   if(selectedIdx>=allIcons.length) selectedIdx=Math.max(0,allIcons.length-1);
   renderGrid();
-  renderShapePreview();
   countVariations();
 }
 
@@ -1192,22 +1025,12 @@ function rerender(){
 }
 
 function renderShapePreview(){
-  var pad=6;
-  var halfL=H*P.ht,halfW=H*P.wd;
+  var sz=80,pad=6;
+  var ratio=P.wd/P.ht,maxR=(sz-pad*2)/2;
+  var halfL,halfW;
+  if(ratio>1){halfW=maxR;halfL=maxR/ratio}else{halfL=maxR;halfW=maxR*ratio}
   var verts=pieceVerts(halfL,halfW,false);
-  // Scale to match the grid display: same viewBox reduction as iconToSVG(showGrid=true)
-  var gridFull=Math.max((S*P.gr+4)*2,(S*P.gr*0.866+4)*2);
-  var iconSize=+($('is').value||160);
-  var gs=(iconSize-12)/gridFull;
-  var mnX=1e9,mxX=-1e9,mnY=1e9,mxY=-1e9;
-  for(var i=0;i<verts.length;i++){
-    var sx=verts[i][0]*gs,sy=verts[i][1]*gs;
-    if(sx<mnX)mnX=sx;if(sx>mxX)mxX=sx;
-    if(sy<mnY)mnY=sy;if(sy>mxY)mxY=sy;
-  }
-  var cx=(mnX+mxX)/2,cy=(mnY+mxY)/2;
-  var bw=Math.max(mxX-mnX+pad*2,24),bh=Math.max(mxY-mnY+pad*2,20);
-  var pts=verts.map(function(v){return[v[0]*gs-cx+bw/2,v[1]*gs-cy+bh/2]});
+  var pts=verts.map(function(v){return[v[0]+sz/2,v[1]+sz/2]});
   var svg;
   if(P.rn>0){
     var cornerAmt=Math.min(P.rn,0.5)/0.5;
@@ -1226,8 +1049,7 @@ function renderShapePreview(){
     var d=pts.map(function(p,i){return(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)}).join('')+'Z';
     svg='<path d="'+d+'" fill="#1a1a1a" opacity="0.8"/>';
   }
-  var w=Math.ceil(bw),h=Math.ceil(bh);
-  $('shapePreview').innerHTML='<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+bw.toFixed(1)+' '+bh.toFixed(1)+'">'+svg+'</svg>';
+  $('shapePreview').innerHTML='<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 '+sz+' '+sz+'">'+svg+'</svg>';
 }
 
 function updPieces(){
@@ -1256,25 +1078,15 @@ function updateReadouts(){
 }
 
 function updBtns(){
-  $('symb').querySelectorAll('button').forEach(function(b){b.className=+b.dataset.v===P.sym?'on':''});
+  $('symb').querySelectorAll('button').forEach(function(b,i){b.className=P.sym===i?'on':''});
   $('shb').querySelectorAll('button').forEach(function(b){b.className=+b.dataset.v===P.sh?'on':''});
 }
 
 // --- Symmetry buttons ---
-// Display order is curated (dihedral first, mirrors last); internal sym indices
-// are stable so old saved presets keep producing the same pattern.
 (function(){
-  [
-    {l:'dihedral',v:3},
-    {l:'3 flip',v:2},
-    {l:'2-fold',v:6},
-    {l:'3-fold',v:5},
-    {l:'6-fold',v:0},
-    {l:'2 mirror',v:4},
-    {l:'3 mirror',v:1}
-  ].forEach(function(s){
-    var b=document.createElement('button');b.textContent=s.l;b.dataset.v=s.v;
-    b.onclick=function(){P.sym=s.v;updBtns();regenerate()};
+  ['6-fold','3 mirror','3 flip','dihedral','2 mirror','3-fold','2-fold','mirror'].forEach(function(l,i){
+    var b=document.createElement('button');b.textContent=l;
+    b.onclick=function(){P.sym=i;updBtns();regenerate()};
     $('symb').appendChild(b);
   });
 })();
@@ -1323,9 +1135,9 @@ function resetCorners(){
   throttledRerender();
 }
 function resetDefaults(){
-  var reset=cloneDefaults();
-  Object.keys(P).forEach(function(k){if(!(k in reset))delete P[k]});
-  Object.keys(reset).forEach(function(k){P[k]=reset[k]});
+  var defaults={sym:0,as:4,wd:0.88,ht:0.85,pz:0.25,ga:0,sp:0,rn:0,bg:'#ffffff',sc:0,gr:4,sh:6,pn:4,pk:0,pi:0,pr:0,lk:0};
+  Object.keys(defaults).forEach(function(k){P[k]=defaults[k]});
+  P.rc=[1,1,1,1];
   var sliders={wd:'wd',ht:'ht',ga:'ga',sp:'sp',pz:'pz',rn:'rn',as:'as',sc:'sc',gr:'gr',pn:'pn',pk:'pk',pi:'pi',pr:'pr'};
   Object.keys(sliders).forEach(function(k){var el=$(sliders[k]);if(el)el.value=P[k]});
   syncShapeSliders();
@@ -1441,24 +1253,21 @@ function savePreset(){
 }
 
 function loadPreset(preset){
-  // Replace semantics, not overlay. Old/imported presets may be missing keys
-  // that exist in the current code; without a clean reset those keys would
-  // carry over from the previously loaded preset and cause visible drift.
-  // Start from defaults, strip unknown keys, then overlay preset params
-  // (deep-copying arrays so mutating P.rc later can't mutate the stored preset).
-  var reset=cloneDefaults();
-  Object.keys(P).forEach(function(k){if(!(k in reset))delete P[k]});
-  Object.keys(reset).forEach(function(k){P[k]=reset[k]});
-  var src=preset.params||{};
-  // Backward compat: legacy taper key → trapeze
-  if(src.ta!==undefined&&src.pz===undefined) P.pz=src.ta;
-  Object.keys(src).forEach(function(k){
-    if(k==='ta'||k==='pp'||k==='ps'||k==='pe') return; // legacy, ignored
-    if(!(k in P_DEFAULTS)) return;                     // unknown, ignored
-    var v=src[k];
-    P[k]=Array.isArray(v)?v.slice():v;
-  });
+  var keys=Object.keys(preset.params);
+  for(var i=0;i<keys.length;i++) P[keys[i]]=preset.params[keys[i]];
   if(!Array.isArray(P.rc)||P.rc.length!==4) P.rc=[1,1,1,1];
+  // Backward compat: map old taper to trapeze
+  if(P.ta!==undefined){P.pz=P.ta;delete P.ta}
+  if(P.pp!==undefined){delete P.pp}
+  delete P.ps;
+  delete P.pe;
+  // Ensure parametric shape params have defaults
+  if(P.pn===undefined)P.pn=4;
+  if(P.pk===undefined)P.pk=0;
+  if(P.pi===undefined)P.pi=0;
+  if(P.pz===undefined)P.pz=0.25;
+  if(P.pr===undefined)P.pr=0;
+  if(P.lk===undefined)P.lk=0;
   // Sync slider values
   var sliders={wd:'wd',ht:'ht',ga:'ga',sp:'sp',pz:'pz',rn:'rn',as:'as',sc:'sc',gr:'gr',pn:'pn',pk:'pk',pi:'pi',pr:'pr'};
   Object.keys(sliders).forEach(function(k){
@@ -1514,65 +1323,37 @@ function renderPresets(){
   var list=$('presetList');
   list.innerHTML='';
   var presets=getPresets();
-  if(presets.length){
-    var well=document.createElement('div');
-    well.className='preset-tokens';
-    presets.forEach(function(p){
-      var b=document.createElement('button');
-      b.className='preset-token';
-      b.textContent=p.name;
-      b.onclick=function(){loadPreset(p)};
-      var del=document.createElement('span');
-      del.className='preset-del';
-      del.textContent='×';
-      del.onclick=function(e){e.stopPropagation();deletePreset(p.name)};
-      b.appendChild(del);
-      well.appendChild(b);
-    });
-    list.appendChild(well);
-  }
-  var row=document.createElement('div');
-  row.style.cssText='display:flex;gap:4px;margin-top:6px';
+  presets.forEach(function(p){
+    var d=document.createElement('div');
+    d.className='preset-item';
+    var name=document.createElement('span');
+    name.className='preset-name';
+    name.textContent=p.name;
+    name.onclick=function(){loadPreset(p)};
+    var del=document.createElement('button');
+    del.className='del';
+    del.textContent='×';
+    del.onclick=function(){deletePreset(p.name)};
+    d.appendChild(name);
+    d.appendChild(del);
+    list.appendChild(d);
+  });
+  // Import/export buttons
   if(presets.length){
     var exp=document.createElement('button');
     exp.textContent='Export';
     exp.className='micro';
+    exp.style.cssText='margin-top:6px;margin-right:4px';
     exp.onclick=exportPresets;
-    row.appendChild(exp);
+    list.appendChild(exp);
   }
   var imp=document.createElement('button');
   imp.textContent='Import';
   imp.className='micro';
+  imp.style.cssText='margin-top:6px';
   imp.onclick=function(){var f=document.createElement('input');f.type='file';f.accept='.json';f.onchange=importPresets;f.click()};
-  row.appendChild(imp);
-  list.appendChild(row);
+  list.appendChild(imp);
 }
-
-// Seed built-in presets — merges with existing, skipping names that already exist
-(function(){
-  var d={rc:[1,1,1,1],bg:'#ffffff',lk:0};
-  var builtins=[
-    {name:'Snowflake',  params:Object.assign({},d,{sym:3,sh:6,gr:5,as:6,sc:0,pn:3,wd:0.7,ht:0.9,pz:0,pk:0,pi:0,pr:0,rn:0.4,ga:0,sp:3})},
-    {name:'Pinwheel',   params:Object.assign({},d,{sym:2,sh:6,gr:4,as:5,sc:2,pn:4,wd:0.6,ht:1.2,pz:0.8,pk:0,pi:0,pr:30,rn:0.1,ga:5,sp:0})},
-    {name:'Starburst',  params:Object.assign({},d,{sym:0,sh:6,gr:5,as:10,sc:3,pn:4,wd:0.4,ht:1.5,pz:0.3,pk:0,pi:0,pr:0,rn:0,ga:8,sp:0})},
-    {name:'Honeycomb',  params:Object.assign({},d,{sym:1,sh:6,gr:3,as:4,sc:0,pn:6,wd:1.0,ht:1.0,pz:0,pk:0,pi:0,pr:0,rn:0.35,ga:0,sp:8})},
-    {name:'Crystal',    params:Object.assign({},d,{sym:3,sh:3,gr:4,as:3,sc:0,pn:5,wd:0.9,ht:0.8,pz:0.15,pk:0.3,pi:0,pr:0,rn:0.2,ga:0,sp:2})},
-    {name:'Mandala',    params:Object.assign({},d,{sym:5,sh:36,gr:6,as:8,sc:4,pn:4,wd:0.7,ht:0.7,pz:0.25,pk:0,pi:0,pr:0,rn:0.15,ga:0,sp:4})},
-    {name:'Kaleidoscope',params:Object.assign({},d,{sym:4,sh:6,gr:4,as:5,sc:5,pn:4,wd:1.2,ht:0.6,pz:0.4,pk:0,pi:0.3,pr:15,rn:0.25,ga:3,sp:0})},
-    {name:'Mosaic',     params:Object.assign({},d,{sym:6,sh:4,gr:3,as:6,sc:3,pn:4,wd:0.9,ht:0.9,pz:0,pk:0,pi:0,pr:45,rn:0,ga:0,sp:5})},
-    {name:'Bloom',      params:Object.assign({},d,{sym:3,sh:6,gr:4,as:5,sc:0,pn:8,wd:1.3,ht:1.3,pz:0,pk:0,pi:-0.3,pr:0,rn:0.7,ga:0,sp:2})},
-    {name:'Shuriken',   params:Object.assign({},d,{sym:2,sh:6,gr:3,as:4,sc:0,pn:3,wd:0.8,ht:1.0,pz:1.0,pk:0,pi:0,pr:0,rn:0.3,ga:10,sp:0})}
-  ];
-  builtins.forEach(function(b){b.params.rc=d.rc.slice()});
-  var existing=getPresets();
-  var names={};
-  existing.forEach(function(p){names[p.name]=1});
-  var added=false;
-  builtins.forEach(function(b){
-    if(!names[b.name]){existing.push(b);added=true}
-  });
-  if(added) setPresets(existing);
-})();
 
 renderPresets();
 generateBatch();
