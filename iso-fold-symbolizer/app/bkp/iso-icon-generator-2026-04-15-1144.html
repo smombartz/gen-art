@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iso Icon Generator</title>
+<style>
+:root{
+  --blue:#59B3F0;--blue-hv:#3d9fd4;--blue-ac:#2b7ab8;
+  --orange:#fe562b;--orange-hv:#e63d12;--orange-ac:#cc2600;
+  --green:#00cb72;--green-hv:#00a85b;--green-ac:#008545;
+  --cream:#ece9e6;--white:#ffffff;
+  --lav-deep:#E0DEEB;--lav:#f0eefb;--lav-pale:#FCFAFD;
+  --gray-blue:#e6e9f3;--gray:#DADADA;--gray-mid:#c2c4cc;--gray-dim:#999;
+  --ink:#232323;--ink-deep:#1c1d1e;
+  --rose:#d6567b;
+  --accent:var(--blue);
+  --mono:ui-monospace,SFMono-Regular,Menlo,"Roboto Mono",monospace;
+  --shadow-drop:0 1px 1.5px rgba(60,60,73,.12),0 2px 4px rgba(60,60,73,.06);
+  --shadow-drop-hv:0 2px 3px rgba(60,60,73,.18),0 4px 8px rgba(60,60,73,.08);
+  --shadow-inset:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -1px 0 rgba(60,60,73,.08);
+  --shadow-inset-on:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -1px 0 rgba(0,0,0,.12);
+  --shadow-press:inset 0 1.5px 2.5px rgba(60,60,73,.22),0 0 0 rgba(0,0,0,0);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:var(--cream);color:var(--ink);padding:0}
+.wrap{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.preview{flex:1;min-width:380px;margin-right:16px;padding-top:16px}
+.preview-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.title{
+  font-family:var(--mono);font-size:11px;font-weight:800;
+  letter-spacing:.22em;text-transform:uppercase;
+  color:var(--ink-deep);margin:0;
+  padding:5px 10px 5px 14px;
+  background:linear-gradient(180deg,var(--white) 0%,var(--lav) 100%);
+  border:1px solid var(--gray);border-radius:5px;
+  box-shadow:var(--shadow-drop),var(--shadow-inset);
+  position:relative;
+}
+.title::before{
+  content:'';position:absolute;left:5px;top:50%;transform:translateY(-50%);
+  width:4px;height:60%;background:var(--orange);border-radius:1px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
+}
+.readout{
+  display:flex;align-items:center;gap:0;
+  font-family:var(--mono);font-size:11px;
+  background:linear-gradient(180deg,#c7c5d1 0%,#dbd9e4 100%);
+  border:1px solid rgba(60,60,73,.22);border-radius:4px;
+  box-shadow:inset 0 1.5px 2px rgba(60,60,73,.22),inset 0 -1px 0 rgba(255,255,255,.5),0 1px 0 rgba(255,255,255,.5);
+  padding:0;overflow:hidden;flex:1;min-width:0;
+}
+.readout-cell{padding:5px 10px;display:flex;align-items:center;gap:6px;min-width:0}
+.readout-cell + .readout-cell{border-left:1px solid rgba(60,60,73,.18);box-shadow:inset 1px 0 0 rgba(255,255,255,.35)}
+.readout-label{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--gray-dim)}
+.readout-value{font-size:11px;font-weight:700;color:var(--ink-deep);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.readout-value.seed{min-width:0;flex:1}
+.header-meta{font-size:12px;color:#aaa;white-space:nowrap}
+.preview-header .seed-display{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.header-actions{display:flex;gap:6px;margin-left:auto}
+
+/* ===== Buttons: TE-style tactile system ===== */
+
+/* Primary — Generate (orange, the "=" key) */
+.gen{
+  padding:9px 18px;
+  font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:#fff;white-space:nowrap;cursor:pointer;
+  background:linear-gradient(180deg,#ff7048 0%,var(--orange) 100%);
+  border:1px solid var(--orange-ac);border-radius:6px;
+  box-shadow:var(--shadow-drop),var(--shadow-inset-on);
+  transition:transform .06s ease-out,box-shadow .1s ease-out,background .1s ease-out;
+}
+.gen:hover{background:linear-gradient(180deg,var(--orange) 0%,var(--orange-hv) 100%);box-shadow:var(--shadow-drop-hv),var(--shadow-inset-on)}
+.gen:active{transform:translateY(1px);background:var(--orange-ac);box-shadow:var(--shadow-press)}
+
+/* Secondary — tactile cream (Reset, Load more, Copy SVG, Download SVG, etc.) */
+.btn,.gen.reset,.top>button{
+  padding:7px 13px;
+  font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink);white-space:nowrap;cursor:pointer;
+  background:linear-gradient(180deg,var(--white) 0%,var(--lav) 100%);
+  border:1px solid var(--gray);border-radius:6px;
+  box-shadow:var(--shadow-drop),var(--shadow-inset);
+  transition:transform .06s ease-out,box-shadow .1s ease-out,background .1s ease-out;
+}
+.btn:hover,.gen.reset:hover,.top>button:hover{background:linear-gradient(180deg,var(--lav-pale) 0%,var(--lav-deep) 100%);box-shadow:var(--shadow-drop-hv),var(--shadow-inset)}
+.btn:active,.gen.reset:active,.top>button:active{transform:translateY(1px);background:var(--lav-deep);box-shadow:var(--shadow-press)}
+
+/* Commit — green save */
+.commit{
+  color:#fff!important;
+  background:linear-gradient(180deg,#14d882 0%,var(--green) 100%)!important;
+  border-color:var(--green-ac)!important;
+  box-shadow:var(--shadow-drop),var(--shadow-inset-on)!important;
+}
+.commit:hover{background:linear-gradient(180deg,var(--green) 0%,var(--green-hv) 100%)!important}
+.commit:active{background:var(--green-ac)!important;box-shadow:var(--shadow-press)!important}
+
+/* Button groups — symmetry, outline shape selectors */
+.bb{display:flex;gap:4px;flex-wrap:wrap}
+.bb button{
+  padding:5px 10px;min-width:30px;
+  font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;
+  color:var(--ink);cursor:pointer;
+  background:linear-gradient(180deg,var(--white) 0%,var(--lav) 100%);
+  border:1px solid var(--gray);border-radius:5px;
+  box-shadow:var(--shadow-drop),var(--shadow-inset);
+  transition:transform .06s ease-out,box-shadow .1s ease-out,background .1s ease-out;
+}
+.bb button:hover{background:linear-gradient(180deg,var(--lav-pale) 0%,var(--lav-deep) 100%);box-shadow:var(--shadow-drop-hv),var(--shadow-inset)}
+.bb button:active{transform:translateY(1px);background:var(--lav-deep);box-shadow:var(--shadow-press)}
+.bb button.on{
+  color:#fff;
+  background:linear-gradient(180deg,var(--blue) 0%,var(--blue-hv) 100%);
+  border-color:var(--blue-ac);
+  box-shadow:var(--shadow-drop),var(--shadow-inset-on);
+}
+.bb button.on:hover{background:linear-gradient(180deg,var(--blue-hv) 0%,var(--blue-ac) 100%)}
+
+/* Micro toggles — link, corners, reset, export/import */
+.micro{
+  padding:2px 7px;
+  font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--gray-dim);cursor:pointer;
+  background:var(--lav-pale);
+  border:1px solid var(--gray-mid);border-radius:3px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5);
+  transition:all .08s ease-out;
+}
+.micro:hover{color:var(--ink);background:var(--lav);border-color:var(--gray)}
+.micro:active{background:var(--lav-deep);box-shadow:inset 0 1px 2px rgba(60,60,73,.15)}
+.micro.on{color:#fff;background:var(--blue);border-color:var(--blue-ac);box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
+
+/* Preset row */
+.preset-item{display:flex;align-items:center;gap:4px;margin-bottom:4px}
+.preset-item button{
+  padding:4px 9px;
+  font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink);cursor:pointer;
+  background:linear-gradient(180deg,var(--white) 0%,var(--lav) 100%);
+  border:1px solid var(--gray);border-radius:4px;
+  box-shadow:var(--shadow-drop),var(--shadow-inset);
+  transition:transform .06s ease-out,box-shadow .1s ease-out,background .1s ease-out;
+}
+.preset-item button:hover{background:linear-gradient(180deg,var(--lav-pale) 0%,var(--lav-deep) 100%)}
+.preset-item button:active{transform:translateY(1px);box-shadow:var(--shadow-press)}
+.preset-item .preset-name{flex:1;font-size:12px;cursor:pointer;padding:3px 6px;border-radius:5px;font-family:var(--mono);letter-spacing:.02em}
+.preset-item .preset-name:hover{background:var(--lav)}
+.preset-item .del{
+  color:var(--gray-dim);font-size:14px;font-weight:400;letter-spacing:0;text-transform:none;
+  padding:2px 8px;min-width:26px;
+  background:transparent;border-color:transparent;box-shadow:none;
+}
+.preset-item .del:hover{color:var(--rose);background:rgba(214,86,123,.08);border-color:rgba(214,86,123,.2);box-shadow:none}
+
+/* ===== Layout / grid ===== */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--icon-size,160px),1fr));gap:10px;margin-bottom:12px}
+.grid-item{
+  border-radius:10px;padding:6px;
+  display:flex;align-items:center;justify-content:center;aspect-ratio:1;
+  cursor:pointer;position:relative;
+  background:transparent;border:1px solid transparent;
+  transition:background .15s ease-out,border-color .15s ease-out,box-shadow .15s ease-out;
+}
+.grid-item svg{width:100%;height:100%;position:relative;z-index:1}
+.grid-item:hover{background:rgba(224,222,235,.45);border-color:rgba(60,60,73,.08)}
+.grid-item.selected{
+  background:var(--lav-pale);
+  border-color:rgba(60,60,73,.12);
+  box-shadow:inset 0 1.5px 3px rgba(60,60,73,.12),inset 0 -1px 0 rgba(255,255,255,.6);
+}
+/* Corner ticks on selected */
+.grid-item.selected::before,.grid-item.selected::after{
+  content:'';position:absolute;width:8px;height:8px;z-index:2;
+  border-color:var(--blue);
+}
+.grid-item.selected::before{top:5px;left:5px;border-top:1.5px solid;border-left:1.5px solid;border-top-left-radius:2px}
+.grid-item.selected::after{bottom:5px;right:5px;border-bottom:1.5px solid;border-right:1.5px solid;border-bottom-right-radius:2px}
+.grid-item .seed{
+  position:absolute;bottom:4px;left:6px;z-index:3;
+  font-size:9px;color:var(--gray-dim);font-family:var(--mono);
+  letter-spacing:.04em;opacity:0;transition:opacity .15s;
+}
+.grid-item:hover .seed,.grid-item.selected .seed{opacity:1}
+.toolbar{
+  flex:0 0 282px;position:sticky;top:0;align-self:flex-start;
+  background:linear-gradient(180deg,var(--lav-pale) 0%,var(--lav) 100%);
+  border-right:1px solid var(--lav-deep);
+  box-shadow:inset 1px 0 0 rgba(255,255,255,.9),inset -1px 0 0 rgba(60,60,73,.06),1px 0 0 rgba(60,60,73,.04);
+  padding:18px 16px;order:-1;max-height:100vh;overflow-y:auto;
+}
+.section{border-bottom:1px solid rgba(60,60,73,.1);padding:12px 0;position:relative}
+.section::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:1px;background:rgba(255,255,255,.8)}
+.section:last-child{border-bottom:none}
+.section:last-child::after{display:none}
+.section summary{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.14em;
+  color:var(--ink);cursor:pointer;padding:4px 0 2px;
+  user-select:none;list-style:none;display:flex;align-items:center;gap:8px;
+  font-family:var(--mono);position:relative;
+}
+.section summary::-webkit-details-marker{display:none}
+.section summary::before{
+  content:'';display:inline-block;width:4px;height:10px;
+  background:var(--blue);border-radius:1px;
+  box-shadow:0 0 0 0.5px rgba(60,60,73,.25),inset 0 1px 0 rgba(255,255,255,.35);
+  transition:background .15s,transform .15s;
+}
+.section[open] summary::before{background:var(--orange)}
+.section summary:hover::before{transform:scaleY(1.15)}
+.section-desc{font-size:11px;color:var(--gray-dim);margin:6px 0 10px;letter-spacing:.01em;font-style:italic}
+.sub-label{
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--gray-dim);
+  margin-bottom:2px;
+}
+.s{margin-bottom:11px}
+.s label{font-size:12px;color:#555;display:block;margin-bottom:3px;cursor:help;letter-spacing:.01em}
+.s .r{display:flex;justify-content:space-between;align-items:center}
+.s .r span{font-size:12px;font-weight:700;font-family:var(--mono);min-width:36px;text-align:right;color:var(--ink)}
+/* Sliders — inset channel, tactile thumb */
+input[type=range]{
+  width:100%;height:18px;-webkit-appearance:none;appearance:none;
+  background:transparent;outline:none;margin-top:4px;cursor:pointer;
+}
+input[type=range]::-webkit-slider-runnable-track{
+  height:6px;border-radius:3px;
+  background:linear-gradient(180deg,#c7c5d1 0%,#e2e0ec 100%);
+  box-shadow:inset 0 1.5px 2px rgba(60,60,73,.28),inset 0 -1px 0 rgba(255,255,255,.6),0 1px 0 rgba(255,255,255,.5);
+  border:1px solid rgba(60,60,73,.18);
+}
+input[type=range]::-moz-range-track{
+  height:6px;border-radius:3px;
+  background:linear-gradient(180deg,#c7c5d1 0%,#e2e0ec 100%);
+  box-shadow:inset 0 1.5px 2px rgba(60,60,73,.28),inset 0 -1px 0 rgba(255,255,255,.6);
+  border:1px solid rgba(60,60,73,.18);
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#4a4a56 0%,var(--ink-deep) 55%,#0a0a0c 100%);
+  border:1px solid rgba(0,0,0,.5);
+  box-shadow:0 1.5px 2.5px rgba(0,0,0,.35),0 0 0 0.5px rgba(255,255,255,.08) inset;
+  cursor:grab;margin-top:-6px;
+  transition:transform .08s ease-out,box-shadow .1s ease-out;
+}
+input[type=range]::-moz-range-thumb{
+  width:16px;height:16px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#4a4a56 0%,var(--ink-deep) 55%,#0a0a0c 100%);
+  border:1px solid rgba(0,0,0,.5);
+  box-shadow:0 1.5px 2.5px rgba(0,0,0,.35);
+  cursor:grab;
+}
+input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 2px 4px rgba(0,0,0,.4)}
+input[type=range]:active::-webkit-slider-thumb{cursor:grabbing;transform:scale(0.94);box-shadow:0 1px 1.5px rgba(0,0,0,.5)}
+input[type=range]:focus-visible::-webkit-slider-thumb{box-shadow:0 1.5px 2.5px rgba(0,0,0,.35),0 0 0 3px rgba(89,179,240,.4)}
+input[type=range]:focus-visible::-moz-range-thumb{box-shadow:0 1.5px 2.5px rgba(0,0,0,.35),0 0 0 3px rgba(89,179,240,.4)}
+
+/* Text & number inputs — inset channel matching slider rail */
+input[type=text],input[type=number]{
+  font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.02em;
+  color:var(--ink);
+  padding:6px 10px;
+  background:linear-gradient(180deg,#d9d7e3 0%,#eae8f2 100%);
+  border:1px solid rgba(60,60,73,.22);border-radius:5px;
+  box-shadow:inset 0 1.5px 2px rgba(60,60,73,.22),inset 0 -1px 0 rgba(255,255,255,.55),0 1px 0 rgba(255,255,255,.5);
+  outline:none;
+  transition:box-shadow .12s ease-out,background .12s ease-out;
+}
+input[type=text]::placeholder{color:var(--gray-dim);font-weight:500;letter-spacing:.04em;text-transform:uppercase;font-size:10.5px}
+input[type=text]:hover,input[type=number]:hover{background:linear-gradient(180deg,#d1cfdc 0%,#e5e3ee 100%)}
+input[type=text]:focus,input[type=number]:focus{
+  background:linear-gradient(180deg,#e5e3ee 0%,var(--lav-pale) 100%);
+  box-shadow:inset 0 1.5px 2px rgba(60,60,73,.18),0 0 0 3px rgba(89,179,240,.35);
+  border-color:var(--blue-ac);
+}
+input[type=number]{text-align:center}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
+.seed-display{font-family:var(--mono);font-size:12px;color:#777;margin-top:4px}
+.top{display:flex;gap:6px;flex-wrap:wrap}
+
+/* Global focus ring — blue accent, consistent across all interactive controls */
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:6px}
+.micro:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+
+/* Disabled state */
+button:disabled,button[disabled]{
+  opacity:.45;cursor:not-allowed;
+  background:linear-gradient(180deg,#efeef4 0%,#e4e2ec 100%)!important;
+  color:var(--gray-dim)!important;
+  box-shadow:none!important;transform:none!important;
+}
+
+/* Inline labels — help cursor only when title attribute is present */
+.s label[title]{cursor:help}
+
+/* Bulk export status line */
+#bulkStatus{font-family:var(--mono);font-size:10px;color:var(--gray-dim);margin-top:6px;letter-spacing:.04em;text-transform:uppercase;min-height:12px}
+
+/* Total pieces — make it read as an auxiliary readout */
+#tpv{color:var(--blue-ac)}
+@media(max-width:700px){
+.wrap{flex-direction:column}
+.preview{min-width:auto;margin-right:16px;margin-left:16px}
+.toolbar{position:static;flex:none;width:auto;border-right:none;padding:12px 16px;border-bottom:1px solid #e8e8e4;order:0}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="preview">
+<div class="preview-header">
+<h1 class="title">Iso Icon Generator</h1>
+<div class="readout">
+<div class="readout-cell"><span class="readout-label">UNI</span><span class="readout-value" id="uvv">—</span></div>
+<div class="readout-cell" style="flex:1;min-width:0"><span class="readout-label">SEED</span><span class="readout-value seed" id="seedInfo">—</span></div>
+</div>
+<div class="header-actions">
+<button class="gen" onclick="generateBatch()">Generate</button>
+<button class="gen reset" onclick="resetDefaults()">Reset</button>
+</div>
+</div>
+<div class="grid" id="grid"></div>
+<button class="gen reset" onclick="loadMore()" id="loadMore" style="width:100%">Load more</button>
+</div>
+<div class="toolbar">
+
+<details class="section" open>
+<summary>Structure</summary>
+<p class="section-desc">Pattern layout and complexity</p>
+
+<div class="s"><label title="How the arm pattern is rotated/mirrored to fill the shape">Symmetry</label>
+<div class="bb" id="symb"></div></div>
+
+<div class="s"><label title="Boundary outline that contains the icon">Outline</label>
+<div class="bb" id="shb"></div></div>
+
+<div class="s"><div class="r"><label title="Number of connected pieces grown from a seed point">Arm size</label><span id="asv">4</span></div>
+<input type="range" min="1" max="20" step="1" value="4" id="as" oninput="P.as=+this.value;updPieces();throttledRegenerate()"></div>
+
+<div class="s"><div class="r"><label title="Radius of the triangular lattice (larger = more room for pieces)">Grid size</label><span id="grv">4</span></div>
+<input type="range" min="2" max="7" step="1" value="4" id="gr" oninput="P.gr=+this.value;$('grv').textContent=P.gr;throttledRegenerate()"></div>
+
+<div class="s"><div class="r"><label title="Additional pieces placed randomly (not connected to the arm)">Scatter</label><span id="scv">0</span></div>
+<input type="range" min="0" max="20" step="1" value="0" id="sc" oninput="P.sc=+this.value;updPieces();throttledRegenerate()"></div>
+
+<div class="s"><div class="r"><label title="Size of each icon in the preview grid">Icon size</label><span id="isv">160</span></div>
+<input type="range" min="50" max="200" step="5" value="160" id="is" oninput="document.querySelector('.grid').style.setProperty('--icon-size',this.value+'px');$('isv').textContent=this.value"></div>
+
+<div class="s"><div class="r"><label>Total pieces</label><span id="tpv">4</span></div></div>
+</details>
+
+<details class="section" open>
+<summary>Shape</summary>
+<p class="section-desc">Piece shape and deformation</p>
+
+<div id="shapePreview" style="display:flex;justify-content:center;padding:6px 0 8px"></div>
+
+<div class="s"><div class="r"><label title="Number of sides for the base polygon">Sides</label><span id="pnv">4</span></div>
+<input type="range" min="3" max="8" step="1" value="4" id="pn" oninput="P.pn=+this.value;$('pnv').textContent=this.value;throttledRerender()"></div>
+
+<div class="s"><div class="r"><label title="How wide each piece is perpendicular to its edge">Width</label><span id="wv">0.88</span></div>
+<input type="range" min="0.1" max="4.0" step="0.01" value="0.88" id="wd" oninput="onWidthChange(+this.value)"></div>
+
+<div style="text-align:right;margin:-6px 0 2px">
+<button id="lkBtn" class="micro" title="Link width and height" onclick="toggleLink()">link</button>
+</div>
+
+<div class="s"><div class="r"><label title="How long each piece is along its edge">Height</label><span id="hv">0.85</span></div>
+<input type="range" min="0.1" max="4.0" step="0.01" value="0.85" id="ht" oninput="onHeightChange(+this.value)"></div>
+
+<div class="s"><div class="r"><label title="Polarity-aware taper: narrows one end of each piece, alternating direction at adjacent nodes">Trapeze</label><span id="pzv">0.25</span></div>
+<input type="range" min="0" max="1" step="0.01" value="0.25" id="pz" oninput="P.pz=+this.value;$('pzv').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
+
+<div class="s"><div class="r"><label title="Shear/lean the shape along its edge axis">Skew</label><span id="pkv">0</span></div>
+<input type="range" min="-1" max="1" step="0.01" value="0" id="pk" oninput="P.pk=+this.value;$('pkv').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
+
+<div class="s"><div class="r"><label title="Push edge midpoints inward (+) or outward (-)">Indent</label><span id="piv">0</span></div>
+<input type="range" min="-1" max="1" step="0.01" value="0" id="pi" oninput="P.pi=+this.value;$('piv').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
+
+<div class="s"><div class="r"><label title="Rotate the piece shape in degrees">Rotate</label><span id="prv">0</span></div>
+<input type="range" min="0" max="360" step="1" value="0" id="pr" oninput="P.pr=+this.value;$('prv').textContent=this.value;throttledRerender()"></div>
+
+<div class="s"><div class="r"><label title="Corner rounding (0-0.5) then morph toward ellipse (0.5-1.0)">Rounding</label><div style="display:flex;align-items:center;gap:6px"><button id="pcBtn" class="micro" title="Toggle per-corner rounding" onclick="toggleCornerSliders()">corners</button><span id="rv">0</span></div></div>
+<input type="range" min="0" max="1" step="0.01" value="0" id="rn" oninput="P.rn=+this.value;throttledRerender()"></div>
+
+<div class="s" id="cornerSliders" style="display:none;margin-left:8px">
+<div class="r" style="margin-bottom:4px"><label class="sub-label">Per corner</label>
+<button class="micro" onclick="resetCorners()">reset</button></div>
+<div class="s"><div class="r"><label title="Rounding multiplier for corner 1">C1</label><span id="rc1v">1</span></div>
+<input type="range" min="0" max="1" step="0.01" value="1" id="rc1" oninput="P.rc[0]=+this.value;$('rc1v').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
+<div class="s"><div class="r"><label title="Rounding multiplier for corner 2">C2</label><span id="rc2v">1</span></div>
+<input type="range" min="0" max="1" step="0.01" value="1" id="rc2" oninput="P.rc[1]=+this.value;$('rc2v').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
+<div class="s"><div class="r"><label title="Rounding multiplier for corner 3">C3</label><span id="rc3v">1</span></div>
+<input type="range" min="0" max="1" step="0.01" value="1" id="rc3" oninput="P.rc[2]=+this.value;$('rc3v').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
+<div class="s"><div class="r"><label title="Rounding multiplier for corner 4">C4</label><span id="rc4v">1</span></div>
+<input type="range" min="0" max="1" step="0.01" value="1" id="rc4" oninput="P.rc[3]=+this.value;$('rc4v').textContent=(+this.value).toFixed(2);throttledRerender()"></div>
+</div>
+</details>
+
+<details class="section">
+<summary>Spacing</summary>
+<p class="section-desc">Gaps and insets between pieces</p>
+
+<div class="s"><div class="r"><label title="Offset each piece outward from center">Gap</label><span id="gv">0</span></div>
+<input type="range" min="-100" max="100" step="1" value="0" id="ga" oninput="P.ga=+this.value;throttledRerender()"></div>
+
+<div class="s"><div class="r"><label title="Inset/shrink each piece toward its center">Spacing</label><span id="spv">0</span></div>
+<input type="range" min="0" max="100" step="0.5" value="0" id="sp" oninput="P.sp=+this.value;throttledRerender()"></div>
+</details>
+
+<details class="section">
+<summary>Export</summary>
+<div class="top" style="padding:4px 0">
+<button id="cp" onclick="copySVG()">Copy SVG</button>
+<button onclick="downloadSVG()">Download SVG</button>
+<button onclick="copySeed()">Copy seed</button>
+</div>
+<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(60,60,73,.1);box-shadow:0 -1px 0 rgba(255,255,255,.8)">
+<div class="sub-label">Bulk export</div>
+<div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+<input type="number" id="bulkCount" value="20" min="1" max="500" style="width:64px">
+<button class="btn" onclick="bulkExportGrid()">Grid SVG</button>
+<button class="btn" onclick="bulkExportIndividual()">Individual</button>
+</div>
+<div id="bulkStatus"></div>
+</div>
+</details>
+
+<details class="section">
+<summary>Presets</summary>
+<div style="display:flex;gap:5px;margin-bottom:6px;padding-top:4px">
+<input type="text" id="presetName" placeholder="Preset name" style="flex:1;min-width:0">
+<button class="btn commit" onclick="savePreset()">Save</button>
+</div>
+<div id="presetList"></div>
+</details>
+
+</div>
+</div>
+
+<script>
+var P={sym:0,as:4,wd:0.88,ht:0.85,pz:0.25,ga:0,sp:0,rn:0,rc:[1,1,1,1],bg:'#ffffff',sc:0,gr:4,sh:6,pn:4,pk:0,pi:0,pr:0,lk:0};
+var BATCH=20;
+function totalPieces(){return P.as+P.sc}
+var allIcons=[];
+var allSeeds=[];
+var selectedIdx=0;
+
+// RAF throttle for slider-driven renders
+var _rafRender=0,_rafRegen=0;
+function throttledRerender(){
+  if(_rafRender)return;
+  _rafRender=requestAnimationFrame(function(){_rafRender=0;rerender()});
+}
+function throttledRegenerate(){
+  if(_rafRegen)return;
+  _rafRegen=requestAnimationFrame(function(){_rafRegen=0;regenerate()});
+}
+
+function $(id){return document.getElementById(id)}
+
+// --- Seeded PRNG (mulberry32) ---
+function prng(seed){
+  return function(){
+    seed|=0;seed=seed+0x6D2B79F5|0;
+    var t=Math.imul(seed^seed>>>15,1|seed);
+    t=t+Math.imul(t^t>>>7,61|t)^t;
+    return((t^t>>>14)>>>0)/4294967296;
+  };
+}
+
+// --- Iso grid math ---
+var S=34;
+var H=S*0.866;
+var DIRS=[
+  {dq:1,dr:0},{dq:0,dr:1},{dq:-1,dr:1},
+  {dq:-1,dr:0},{dq:0,dr:-1},{dq:1,dr:-1}
+];
+
+function nKey(q,r){return q+','+r}
+function eKey(q1,r1,q2,r2){
+  var a=nKey(q1,r1),b=nKey(q2,r2);
+  return a<b?a+'|'+b:b+'|'+a;
+}
+function parseEKey(k){
+  var p=k.split('|'),a=p[0].split(',').map(Number),b=p[1].split(',').map(Number);
+  return{q1:a[0],r1:a[1],q2:b[0],r2:b[1]};
+}
+
+function rotNode(q,r,times){
+  for(var t=0;t<times;t++){var nq=-r,nr=q+r;q=nq;r=nr}
+  return{q:q,r:r};
+}
+function mirNode(q,r){return{q:-q-r,r:r}}
+
+// --- Shape boundary ---
+function shapeVerts(n,cr){
+  // Regular n-gon vertices, circumradius cr, first vertex at top
+  var pts=[];
+  for(var i=0;i<n;i++){
+    var a=2*Math.PI*i/n-Math.PI/2;
+    pts.push([cr*Math.cos(a),cr*Math.sin(a)]);
+  }
+  return pts;
+}
+function insideShape(x,y){
+  if(P.sh>=36) return x*x+y*y<=shapeCR*shapeCR; // circle
+  var n=P.sh,a=Math.atan2(y,x)+Math.PI/2;
+  if(a<0)a+=2*Math.PI;
+  var sector=2*Math.PI/n;
+  var off=((a%sector)+sector)%sector-sector/2;
+  var maxR=shapeCR*Math.cos(Math.PI/n)/Math.cos(off);
+  return Math.sqrt(x*x+y*y)<=maxR;
+}
+var shapeCR=0; // set before use
+
+// --- Polarity ---
+function calcPol(edgeSet){
+  var pol={};
+  var ak=Object.keys(edgeSet);if(!ak.length)return pol;
+  var adj={};
+  ak.forEach(function(k){
+    var e=parseEKey(k);
+    var k1=nKey(e.q1,e.r1),k2=nKey(e.q2,e.r2);
+    if(!adj[k1])adj[k1]=[];if(!adj[k2])adj[k2]=[];
+    adj[k1].push(k2);adj[k2].push(k1);
+  });
+  var vis={},all=Object.keys(adj);
+  for(var i=0;i<all.length;i++){
+    if(vis[all[i]])continue;
+    pol[all[i]]=0;vis[all[i]]=true;
+    var q=[all[i]];
+    while(q.length){
+      var cur=q.shift(),cp=pol[cur];
+      (adj[cur]||[]).forEach(function(nb){
+        if(!vis[nb]){pol[nb]=cp===0?1:0;vis[nb]=true;q.push(nb)}
+      });
+    }
+  }
+  return pol;
+}
+
+// --- Generate one icon from seed ---
+function generateIcon(seed){
+  var rand=prng(seed);
+  var edgeSet={};
+  
+  // Actually simplest correct approach for all hexagonal:
+  // Symmetry modes — all produce hexagonal (6 copies total):
+  // 0: 6-fold — arm × 6 rotation
+  // 1: 3 mirror — arm mirrored, pair × 3 rotation (bilateral within each 120°)
+  // 2: 3 flip — arm × 3 at even rotations, mirrored arm × 3 at odd rotations (pinwheel)
+  // 3: dihedral — arm in 30° wedge, mirrored to 60°, × 6 rotation
+  // Wedge angles per symmetry mode
+  var wedgeAngles=[60,60,60,30,90,120,180,180];
+  var wedgeAngle=wedgeAngles[P.sym]||60;
+
+  // Get all possible edges for arm growth
+  var R=P.gr;
+  shapeCR=S*R;
+  var possibleEdges=[];
+  for(var q=-R;q<=R;q++)
+    for(var r=-R;r<=R;r++)
+      for(var d=0;d<6;d++){
+        var nq=q+DIRS[d].dq,nr=r+DIRS[d].dr;
+        if(Math.abs(nq)>R||Math.abs(nr)>R||Math.abs(nq+nr)>R)continue;
+        var p1x=S*(q+r*0.5),p1y=S*r*0.866;
+        var p2x=S*(nq+nr*0.5),p2y=S*nr*0.866;
+        if(!insideShape(p1x,p1y)||!insideShape(p2x,p2y))continue;
+        var mx=(p1x+p2x)/2,my=(p1y+p2y)/2;
+        var ang=Math.atan2(my,mx)*180/Math.PI;
+        if(ang<-2)ang+=360;
+        if(ang>=-2&&ang<wedgeAngle+2){
+          possibleEdges.push({q1:q,r1:r,q2:nq,r2:nr,mx:mx,my:my,dist:Math.sqrt(mx*mx+my*my)});
+        }
+      }
+
+  // Remove duplicate edges
+  var seen={};
+  possibleEdges=possibleEdges.filter(function(e){
+    var k=eKey(e.q1,e.r1,e.q2,e.r2);
+    if(seen[k])return false;seen[k]=true;return true;
+  });
+
+  // Grow arm — split between tree growth and scattered (random) placement
+  var armSet={};
+  var armKeys=[];
+
+  possibleEdges.sort(function(a,b){return a.dist-b.dist});
+  if(!possibleEdges.length)return{edges:edgeSet,pol:{},seed:seed};
+
+  var treeCount=P.as;
+  var scatterCount=P.sc;
+
+  // Tree growth: connected random walk from seed
+  if(treeCount>0){
+    var seedEdge=possibleEdges[Math.min(Math.floor(rand()*2),possibleEdges.length-1)];
+    var sk=eKey(seedEdge.q1,seedEdge.r1,seedEdge.q2,seedEdge.r2);
+    armSet[sk]=1;armKeys.push(sk);
+
+    for(var step=0;step<treeCount-1;step++){
+      var cands=[];
+      armKeys.forEach(function(k){
+        var e=parseEKey(k);
+        [[e.q1,e.r1],[e.q2,e.r2]].forEach(function(node){
+          DIRS.forEach(function(d){
+            var nq=node[0]+d.dq,nr=node[1]+d.dr;
+            if(Math.abs(nq)>R||Math.abs(nr)>R||Math.abs(nq+nr)>R)return;
+            var p1x=S*(node[0]+node[1]*0.5),p1y=S*node[1]*0.866;
+            var p2x=S*(nq+nr*0.5),p2y=S*nr*0.866;
+            if(!insideShape(p1x,p1y)||!insideShape(p2x,p2y))return;
+            var nek=eKey(node[0],node[1],nq,nr);
+            if(armSet[nek])return;
+            var mx=(p1x+p2x)/2,my=(p1y+p2y)/2;
+            var ang=Math.atan2(my,mx)*180/Math.PI;
+            if(ang<-2)ang+=360;
+            if(ang>=-2&&ang<wedgeAngle+2)
+              cands.push({ek:nek,dist:Math.sqrt(mx*mx+my*my)});
+          });
+        });
+      });
+      if(!cands.length)break;
+      cands.sort(function(){return rand()-0.5});
+      var pick=cands[Math.floor(rand()*Math.min(3,cands.length))];
+      armSet[pick.ek]=1;armKeys.push(pick.ek);
+    }
+  }
+
+  // Scattered pieces: randomly placed edges anywhere in the wedge
+  if(scatterCount>0){
+    var available=possibleEdges.filter(function(e){
+      return !armSet[eKey(e.q1,e.r1,e.q2,e.r2)];
+    });
+    for(var s=0;s<scatterCount&&available.length;s++){
+      var idx=Math.floor(rand()*available.length);
+      var re=available[idx];
+      var rk=eKey(re.q1,re.r1,re.q2,re.r2);
+      armSet[rk]=1;armKeys.push(rk);
+      available.splice(idx,1);
+    }
+  }
+
+  // Stamp with symmetry
+  function stamp(q1,r1,q2,r2){edgeSet[eKey(q1,r1,q2,r2)]=1}
+  function stampRot(e,f){var a1=rotNode(e.q1,e.r1,f),a2=rotNode(e.q2,e.r2,f);stamp(a1.q,a1.r,a2.q,a2.r)}
+  function stampRotMir(e,f){var a1=rotNode(e.q1,e.r1,f),a2=rotNode(e.q2,e.r2,f);stamp(a1.q,a1.r,a2.q,a2.r);var m1=mirNode(a1.q,a1.r),m2=mirNode(a2.q,a2.r);stamp(m1.q,m1.r,m2.q,m2.r)}
+  armKeys.forEach(function(k){
+    var e=parseEKey(k);
+    if(P.sym===0){
+      // C6: 6-fold rotation
+      for(var f=0;f<6;f++) stampRot(e,f);
+    } else if(P.sym===1){
+      // D3: 3 mirror — arm + mirror, × 3
+      for(var f=0;f<3;f++) stampRotMir(e,f*2);
+    } else if(P.sym===2){
+      // 3 flip: arm at even rotations, mirrored at odd (pinwheel)
+      for(var f=0;f<3;f++){
+        stampRot(e,f*2);
+        var m1=mirNode(e.q1,e.r1),m2=mirNode(e.q2,e.r2);
+        var r1=rotNode(m1.q,m1.r,f*2+1),r2=rotNode(m2.q,m2.r,f*2+1);
+        stamp(r1.q,r1.r,r2.q,r2.r);
+      }
+    } else if(P.sym===3){
+      // D6: dihedral — mirror + 6×
+      for(var f=0;f<6;f++) stampRotMir(e,f);
+    } else if(P.sym===4){
+      // D2: 2 mirror — arm + mirror, × 2 (cross)
+      for(var f=0;f<2;f++) stampRotMir(e,f*3);
+    } else if(P.sym===5){
+      // C3: 3-fold rotation (chiral triangular)
+      for(var f=0;f<3;f++) stampRot(e,f*2);
+    } else if(P.sym===6){
+      // C2: 2-fold rotation (playing card)
+      for(var f=0;f<2;f++) stampRot(e,f*3);
+    } else if(P.sym===7){
+      // D1: single mirror (Rorschach)
+      stamp(e.q1,e.r1,e.q2,e.r2);
+      var m1=mirNode(e.q1,e.r1),m2=mirNode(e.q2,e.r2);
+      stamp(m1.q,m1.r,m2.q,m2.r);
+    }
+  });
+
+  var pol=calcPol(edgeSet);
+  return{edges:edgeSet,pol:pol,seed:seed};
+}
+
+// --- Shape boundary outline ---
+function gridSVG(){
+  shapeCR=S*P.gr;
+  if(P.sh>=36){
+    return '<circle cx="0" cy="0" r="'+shapeCR.toFixed(1)+'" fill="none" stroke="#e0e0dc" stroke-width="0.8"/>';
+  }
+  var verts=shapeVerts(P.sh,shapeCR);
+  var d='';
+  for(var i=0;i<verts.length;i++) d+=(i?'L':'M')+verts[i][0].toFixed(1)+','+verts[i][1].toFixed(1);
+  return '<path d="'+d+'Z" fill="none" stroke="#e0e0dc" stroke-width="0.8"/>';
+}
+
+// --- Polygon inset (centroid pull) ---
+function insetPoly(pts,amount){
+  var cx=0,cy=0,n=pts.length;
+  for(var i=0;i<n;i++){cx+=pts[i][0];cy+=pts[i][1]}
+  cx/=n;cy/=n;
+  return pts.map(function(p){
+    var dx=p[0]-cx,dy=p[1]-cy;
+    var d=Math.sqrt(dx*dx+dy*dy);
+    if(d<0.1)return[p[0],p[1]];
+    var t=Math.max(0,d-amount)/d;
+    return[cx+dx*t,cy+dy*t];
+  });
+}
+
+// --- Render icon to SVG ---
+function iconToSVG(icon,sz,bgColor,showGrid){
+  var ak=Object.keys(icon.edges);
+  var vx,vy,fullDim;
+
+  // Pre-compute all plank points once (avoids double computation for bounds+render)
+  var allPts={};
+  ak.forEach(function(k){
+    var e=parseEKey(k);
+    allPts[k]=plankPts(e.q1,e.r1,e.q2,e.r2,icon.pol);
+  });
+
+  if(showGrid){
+    var R=P.gr;
+    var gridW=S*R;
+    var gridH=S*R*0.866;
+    var pad=4;
+    fullDim=Math.max((gridW+pad)*2,(gridH+pad)*2);
+    vx=-fullDim/2;vy=-fullDim/2;
+  } else {
+    var mnX=1e9,mxX=-1e9,mnY=1e9,mxY=-1e9;
+    ak.forEach(function(k){
+      allPts[k].forEach(function(p){if(p[0]<mnX)mnX=p[0];if(p[0]>mxX)mxX=p[0];if(p[1]<mnY)mnY=p[1];if(p[1]>mxY)mxY=p[1]});
+    });
+    if(!ak.length){mnX=0;mxX=sz;mnY=0;mxY=sz}
+    var pad=8;mnX-=pad;mnY-=pad;mxX+=pad;mxY+=pad;
+    fullDim=Math.max(mxX-mnX,mxY-mnY);
+    var cx=(mnX+mxX)/2,cy=(mnY+mxY)/2;
+    vx=cx-fullDim/2;vy=cy-fullDim/2;
+  }
+
+  var parts=['<svg viewBox="',vx.toFixed(1),' ',vy.toFixed(1),' ',fullDim.toFixed(1),' ',fullDim.toFixed(1),'" xmlns="http://www.w3.org/2000/svg" width="',sz,'" height="',sz,'">'];
+  if(bgColor&&bgColor!=='transparent')
+    parts.push('<rect x="',vx.toFixed(1),'" y="',vy.toFixed(1),'" width="',fullDim.toFixed(1),'" height="',fullDim.toFixed(1),'" fill="',bgColor,'"/>');
+
+  if(showGrid) parts.push(gridSVG());
+
+  ak.forEach(function(k){
+    var pts=allPts[k];
+    if(P.sp>0) pts=insetPoly(pts,P.sp);
+    if(P.rn>0){
+      var cornerAmt=Math.min(P.rn,0.5)/0.5; // 0→1 over P.rn 0→0.5
+      var ellipseAmt=Math.max(0,(P.rn-0.5)/0.5); // 0→1 over P.rn 0.5→1.0
+      // Phase 2: lerp vertices toward ellipse in local piece coords
+      if(ellipseAmt>0&&pts._mx!==undefined){
+        var emx=pts._mx,emy=pts._my,eux=pts._ux,euy=pts._uy,enx=pts._nx,eny=pts._ny;
+        var ehl=pts._halfL,eaw=pts._avgW;
+        var epts=[];
+        for(var j=0;j<pts.length;j++){
+          // Project vertex into local coords
+          var lx=(pts[j][0]-emx)*eux+(pts[j][1]-emy)*euy; // along edge
+          var ly=(pts[j][0]-emx)*enx+(pts[j][1]-emy)*eny; // perpendicular
+          // Ellipse position at same angle in local space
+          var la=Math.atan2(ly/eaw,lx/ehl);
+          var elx=ehl*Math.cos(la),ely=eaw*Math.sin(la);
+          // Lerp and project back to global
+          var flx=lx+(elx-lx)*ellipseAmt,fly=ly+(ely-ly)*ellipseAmt;
+          epts.push([emx+flx*eux+fly*enx,emy+flx*euy+fly*eny]);
+        }
+        pts=epts;
+      }
+      var n=pts.length,segs=[];
+      for(var i=0;i<n;i++){
+        var prev=pts[(i-1+n)%n],cur=pts[i],next=pts[(i+1)%n];
+        var d1x=prev[0]-cur[0],d1y=prev[1]-cur[1],d2x=next[0]-cur[0],d2y=next[1]-cur[1];
+        var l1=Math.sqrt(d1x*d1x+d1y*d1y),l2=Math.sqrt(d2x*d2x+d2y*d2y);
+        var cm=P.rc[i%P.rc.length];
+        var rr=Math.min(l1,l2)*0.5*cornerAmt*cm;
+        segs.push(i===0?'M':'L',(cur[0]+d1x/l1*rr).toFixed(1),',',(cur[1]+d1y/l1*rr).toFixed(1),
+          'Q',cur[0].toFixed(1),',',cur[1].toFixed(1),' ',(cur[0]+d2x/l2*rr).toFixed(1),',',(cur[1]+d2y/l2*rr).toFixed(1));
+      }
+      parts.push('<path d="',segs.join(''),'Z" fill="#1a1a1a"/>');
+    } else {
+      parts.push('<polygon points="',pts.map(function(p){return p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' '),'" fill="#1a1a1a"/>');
+    }
+  });
+  return parts.join('')+'</svg>';
+}
+
+// --- Shared parametric shape pipeline (local coords) ---
+function pieceVerts(halfL,halfW,polFlip){
+  var n=Math.round(P.pn);if(n<3)n=3;
+  var verts=[];
+  for(var i=0;i<n;i++){
+    var angle=2*Math.PI*i/n-Math.PI/2+Math.PI/n;
+    verts.push([Math.cos(angle)*halfL, Math.sin(angle)*halfW]);
+  }
+  if(P.pk!==0) for(var i=0;i<verts.length;i++) verts[i][0]+=verts[i][1]*P.pk;
+  if(P.pz!==0){
+    var minX=Infinity,maxX=-Infinity;
+    for(var i=0;i<verts.length;i++){if(verts[i][0]<minX)minX=verts[i][0];if(verts[i][0]>maxX)maxX=verts[i][0]}
+    var rng=maxX-minX||1;
+    for(var i=0;i<verts.length;i++){
+      var t=(verts[i][0]-minX)/rng;
+      verts[i][1]*=(polFlip?(1-P.pz*(1-t)):(1-P.pz*t));
+    }
+  }
+  if(P.pi!==0){
+    var ind=[],cA=0,cN=0;
+    for(var j=0;j<verts.length;j++){cA+=verts[j][0];cN+=verts[j][1]}
+    cA/=verts.length;cN/=verts.length;
+    for(var i=0;i<verts.length;i++){
+      var v0=verts[i],v1=verts[(i+1)%verts.length];
+      ind.push(v0);
+      var mA=(v0[0]+v1[0])/2,mN=(v0[1]+v1[1])/2;
+      var eA=v1[0]-v0[0],eN=v1[1]-v0[1],eL=Math.sqrt(eA*eA+eN*eN);
+      if(eL>0.01){
+        var tA=cA-mA,tN=cN-mN,tD=Math.sqrt(tA*tA+tN*tN);
+        if(tD>0.01){tA/=tD;tN/=tD;ind.push([mA+tA*eL*0.3*P.pi,mN+tN*eL*0.3*P.pi])}
+        else ind.push([mA,mN]);
+      }
+    }
+    verts=ind;
+  }
+  if(P.pr!==0){
+    var rad=P.pr*Math.PI/180,cosR=Math.cos(rad),sinR=Math.sin(rad);
+    var rcx=0,rcy=0;
+    for(var i=0;i<verts.length;i++){rcx+=verts[i][0];rcy+=verts[i][1]}
+    rcx/=verts.length;rcy/=verts.length;
+    for(var i=0;i<verts.length;i++){
+      var dx=verts[i][0]-rcx,dy=verts[i][1]-rcy;
+      verts[i][0]=rcx+dx*cosR-dy*sinR;
+      verts[i][1]=rcy+dx*sinR+dy*cosR;
+    }
+  }
+  return verts;
+}
+
+function plankPts(q1,r1,q2,r2,pol){
+  var p1x=S*(q1+r1*0.5),p1y=S*r1*0.866;
+  var p2x=S*(q2+r2*0.5),p2y=S*r2*0.866;
+  var dx=p2x-p1x,dy=p2y-p1y;
+  var len=Math.sqrt(dx*dx+dy*dy);
+  var ux=dx/len,uy=dy/len,nx=-uy,ny=ux;
+
+  var halfW=H*P.wd;
+  var halfL=H*P.ht;
+  if(halfL<2)halfL=2;
+  var polNode1=pol[nKey(q1,r1)]===1;
+
+  var cx=(p1x+p2x)/2,cy=(p1y+p2y)/2;
+  var odist=Math.sqrt(cx*cx+cy*cy);
+  var ox=odist>0?cx/odist*P.ga:0,oy=odist>0?cy/odist*P.ga:0;
+  var mx=cx+ox,my=cy+oy;
+  function mkpt(a,n){return[mx+ux*a+nx*n,my+uy*a+ny*n]}
+  function tag(arr){arr._mx=mx;arr._my=my;arr._ux=ux;arr._uy=uy;arr._nx=nx;arr._ny=ny;arr._halfL=halfL;arr._avgW=halfW;return arr}
+
+  var verts=pieceVerts(halfL,halfW,polNode1);
+  var pts=[];
+  for(var i=0;i<verts.length;i++) pts.push(mkpt(verts[i][0],verts[i][1]));
+  return tag(pts);
+}
+
+// --- Batch generation ---
+function iconFingerprint(icon){
+  if(icon._fp)return icon._fp;
+  icon._fp=Object.keys(icon.edges).sort().join(';');
+  return icon._fp;
+}
+
+var _countTimer=0;
+var _countRaf=0;
+function countVariations(){
+  clearTimeout(_countTimer);
+  if(_countRaf){cancelAnimationFrame(_countRaf);_countRaf=0}
+  $('uvv').textContent='counting…';
+  _countTimer=setTimeout(function(){
+    var seen={},unique=0,stale=0,i=0,maxSamples=5000,chunkSize=200;
+    function chunk(){
+      var end=Math.min(i+chunkSize,maxSamples);
+      for(;i<end;i++){
+        var seed=Math.floor(Math.random()*2147483647);
+        var icon=generateIcon(seed);
+        var fp=iconFingerprint(icon);
+        if(!seen[fp]){seen[fp]=1;unique++;stale=0}
+        else{stale++;if(stale>500){$('uvv').textContent=unique;return}}
+      }
+      if(i<maxSamples){_countRaf=requestAnimationFrame(chunk)}
+      else{$('uvv').textContent=unique+'+'}
+    }
+    _countRaf=requestAnimationFrame(chunk);
+  },500);
+}
+
+function generateUniqueSeeds(count,existingFPs){
+  var seeds=[];
+  var seen=existingFPs||{};
+  var attempts=0;
+  while(seeds.length<count&&attempts<count*20){
+    attempts++;
+    var seed=Math.floor(Math.random()*2147483647);
+    var icon=generateIcon(seed);
+    var fp=iconFingerprint(icon);
+    if(seen[fp])continue;
+    seen[fp]=1;
+    seeds.push(seed);
+  }
+  return seeds;
+}
+
+function generateBatch(){
+  allSeeds=generateUniqueSeeds(BATCH);
+  selectedIdx=0;
+  regenerate();
+}
+
+function loadMore(){
+  // Collect existing fingerprints
+  var seen={};
+  allIcons.forEach(function(icon){seen[iconFingerprint(icon)]=1});
+  var newSeeds=generateUniqueSeeds(BATCH,seen);
+  allSeeds=allSeeds.concat(newSeeds);
+  // Append new icons without rebuilding all
+  var newIcons=newSeeds.map(function(s){return generateIcon(s)});
+  allIcons=allIcons.concat(newIcons);
+  appendGrid(newIcons,allIcons.length-newIcons.length);
+  countVariations();
+}
+
+function regenerate(){
+  // Rebuild from seeds, dedup — single generation pass
+  var seen={};
+  var validSeeds=[],validIcons=[];
+  for(var i=0;i<allSeeds.length;i++){
+    var icon=generateIcon(allSeeds[i]);
+    var fp=iconFingerprint(icon);
+    if(seen[fp])continue;
+    seen[fp]=1;
+    validSeeds.push(allSeeds[i]);
+    validIcons.push(icon);
+  }
+  allSeeds=validSeeds;
+  allIcons=validIcons;
+  if(selectedIdx>=allIcons.length) selectedIdx=Math.max(0,allIcons.length-1);
+  renderGrid();
+  countVariations();
+}
+
+function makeGridItem(icon,idx){
+  var d=document.createElement('div');
+  d.className='grid-item'+(idx===selectedIdx?' selected':'');
+  d.style.background=P.bg;
+  d.innerHTML=iconToSVG(icon,120,'transparent',true)+'<span class="seed">#'+icon.seed+'</span>';
+  d.onclick=function(){
+    var prev=$('grid').children[selectedIdx];
+    if(prev)prev.className='grid-item';
+    selectedIdx=idx;
+    d.className='grid-item selected';
+    $('seedInfo').textContent=icon.seed;
+  };
+  return d;
+}
+
+function updateGridItem(el,icon,idx){
+  el.className='grid-item'+(idx===selectedIdx?' selected':'');
+  el.style.background=P.bg;
+  var svgEl=el.querySelector('svg');
+  if(svgEl) svgEl.outerHTML=iconToSVG(icon,120,'transparent',true);
+  var seedEl=el.querySelector('.seed');
+  if(seedEl) seedEl.textContent='#'+icon.seed;
+  el.onclick=function(){
+    var prev=$('grid').children[selectedIdx];
+    if(prev)prev.className='grid-item';
+    selectedIdx=idx;
+    el.className='grid-item selected';
+    $('seedInfo').textContent=icon.seed;
+  };
+}
+
+function renderGrid(){
+  var g=$('grid');
+  var existing=g.children;
+  for(var i=0;i<allIcons.length;i++){
+    if(i<existing.length){
+      updateGridItem(existing[i],allIcons[i],i);
+    } else {
+      g.appendChild(makeGridItem(allIcons[i],i));
+    }
+  }
+  while(g.children.length>allIcons.length) g.removeChild(g.lastChild);
+  updateReadouts();
+}
+
+function appendGrid(icons,startIdx){
+  var g=$('grid');
+  icons.forEach(function(icon,i){g.appendChild(makeGridItem(icon,startIdx+i))});
+}
+
+function rerender(){
+  renderGrid();
+  renderShapePreview();
+}
+
+function renderShapePreview(){
+  var sz=80,pad=6;
+  var ratio=P.wd/P.ht,maxR=(sz-pad*2)/2;
+  var halfL,halfW;
+  if(ratio>1){halfW=maxR;halfL=maxR/ratio}else{halfL=maxR;halfW=maxR*ratio}
+  var verts=pieceVerts(halfL,halfW,false);
+  var pts=verts.map(function(v){return[v[0]+sz/2,v[1]+sz/2]});
+  var svg;
+  if(P.rn>0){
+    var cornerAmt=Math.min(P.rn,0.5)/0.5;
+    var nv=pts.length,segs=[];
+    for(var i=0;i<nv;i++){
+      var prev=pts[(i-1+nv)%nv],cur=pts[i],next=pts[(i+1)%nv];
+      var d1x=prev[0]-cur[0],d1y=prev[1]-cur[1],d2x=next[0]-cur[0],d2y=next[1]-cur[1];
+      var l1=Math.sqrt(d1x*d1x+d1y*d1y),l2=Math.sqrt(d2x*d2x+d2y*d2y);
+      var cm=P.rc[i%P.rc.length];
+      var rr=Math.min(l1,l2)*0.5*cornerAmt*cm;
+      segs.push(i===0?'M':'L',(cur[0]+d1x/l1*rr).toFixed(1),',',(cur[1]+d1y/l1*rr).toFixed(1),
+        'Q',cur[0].toFixed(1),',',cur[1].toFixed(1),' ',(cur[0]+d2x/l2*rr).toFixed(1),',',(cur[1]+d2y/l2*rr).toFixed(1));
+    }
+    svg='<path d="'+segs.join('')+'Z" fill="#1a1a1a" opacity="0.8"/>';
+  } else {
+    var d=pts.map(function(p,i){return(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)}).join('')+'Z';
+    svg='<path d="'+d+'" fill="#1a1a1a" opacity="0.8"/>';
+  }
+  $('shapePreview').innerHTML='<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 '+sz+' '+sz+'">'+svg+'</svg>';
+}
+
+function updPieces(){
+  $('asv').textContent=P.as;
+  $('scv').textContent=P.sc;
+  $('tpv').textContent=totalPieces();
+}
+
+function syncShapeSliders(){
+  $('pn').value=P.pn;$('pnv').textContent=Math.round(P.pn);
+  $('pk').value=P.pk;$('pkv').textContent=P.pk.toFixed(2);
+  $('pi').value=P.pi;$('piv').textContent=P.pi.toFixed(2);
+  $('pz').value=P.pz;$('pzv').textContent=P.pz.toFixed(2);
+  $('pr').value=P.pr;$('prv').textContent=Math.round(P.pr);
+}
+
+function updateReadouts(){
+  $('wv').textContent=P.wd.toFixed(2);
+  $('hv').textContent=P.ht.toFixed(2);
+  $('gv').textContent=P.ga.toFixed(1);
+  $('spv').textContent=P.sp.toFixed(1);
+  $('rv').textContent=P.rn.toFixed(2);
+  syncShapeSliders();
+  updPieces();
+  updBtns();
+}
+
+function updBtns(){
+  $('symb').querySelectorAll('button').forEach(function(b,i){b.className=P.sym===i?'on':''});
+  $('shb').querySelectorAll('button').forEach(function(b){b.className=+b.dataset.v===P.sh?'on':''});
+}
+
+// --- Symmetry buttons ---
+(function(){
+  ['6-fold','3 mirror','3 flip','dihedral','2 mirror','3-fold','2-fold','mirror'].forEach(function(l,i){
+    var b=document.createElement('button');b.textContent=l;
+    b.onclick=function(){P.sym=i;updBtns();regenerate()};
+    $('symb').appendChild(b);
+  });
+})();
+
+// --- Shape buttons ---
+(function(){
+  [{l:'3',v:3},{l:'4',v:4},{l:'5',v:5},{l:'6',v:6},{l:'8',v:8},{l:'○',v:36}].forEach(function(s){
+    var b=document.createElement('button');b.textContent=s.l;b.dataset.v=s.v;
+    b.onclick=function(){P.sh=s.v;updBtns();regenerate()};
+    $('shb').appendChild(b);
+  });
+})();
+
+
+var _linkRatio=1;
+function toggleLink(){
+  P.lk=P.lk?0:1;
+  if(P.lk) _linkRatio=P.wd/P.ht;
+  $('lkBtn').style.background=P.lk?'var(--accent)':'#fff';
+  $('lkBtn').style.color=P.lk?'#fff':'#999';
+  $('lkBtn').style.borderColor=P.lk?'var(--accent)':'#ccc';
+}
+function onWidthChange(v){
+  P.wd=v;
+  if(P.lk){P.ht=v/_linkRatio;$('ht').value=P.ht;$('hv').textContent=P.ht.toFixed(2)}
+  throttledRerender();
+}
+function onHeightChange(v){
+  P.ht=v;
+  if(P.lk){P.wd=v*_linkRatio;$('wd').value=P.wd;$('wv').textContent=P.wd.toFixed(2)}
+  throttledRerender();
+}
+
+var _cornersVisible=false;
+function toggleCornerSliders(){
+  _cornersVisible=!_cornersVisible;
+  $('cornerSliders').style.display=_cornersVisible?'block':'none';
+  $('pcBtn').style.background=_cornersVisible?'var(--accent)':'#fff';
+  $('pcBtn').style.color=_cornersVisible?'#fff':'#999';
+  $('pcBtn').style.borderColor=_cornersVisible?'var(--accent)':'#ccc';
+}
+function setAllCorners(){}
+function resetCorners(){
+  P.rc=[1,1,1,1];
+  for(var i=1;i<=4;i++){$('rc'+i).value=1;$('rc'+i+'v').textContent='1.00'}
+  throttledRerender();
+}
+function resetDefaults(){
+  var defaults={sym:0,as:4,wd:0.88,ht:0.85,pz:0.25,ga:0,sp:0,rn:0,bg:'#ffffff',sc:0,gr:4,sh:6,pn:4,pk:0,pi:0,pr:0,lk:0};
+  Object.keys(defaults).forEach(function(k){P[k]=defaults[k]});
+  P.rc=[1,1,1,1];
+  var sliders={wd:'wd',ht:'ht',ga:'ga',sp:'sp',pz:'pz',rn:'rn',as:'as',sc:'sc',gr:'gr',pn:'pn',pk:'pk',pi:'pi',pr:'pr'};
+  Object.keys(sliders).forEach(function(k){var el=$(sliders[k]);if(el)el.value=P[k]});
+  syncShapeSliders();
+  resetCorners();setAllCorners();
+  updBtns();updateReadouts();regenerate();
+}
+
+function copySVG(){
+  if(!allIcons.length)return;
+  var icon=allIcons[selectedIdx];
+  var svg=iconToSVG(icon,512,P.bg==='#ffffff'?'transparent':P.bg);
+  navigator.clipboard.writeText(svg).then(function(){
+    $('cp').textContent='Copied!';setTimeout(function(){$('cp').textContent='Copy SVG'},1500);
+  });
+}
+
+function downloadSVG(){
+  if(!allIcons.length)return;
+  var icon=allIcons[selectedIdx];
+  var svg=iconToSVG(icon,512,P.bg==='#ffffff'?'transparent':P.bg);
+  var blob=new Blob([svg],{type:'image/svg+xml'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='iso-icon-'+icon.seed+'.svg';
+  a.click();
+}
+
+function bulkExportGrid(){
+  var count=Math.max(1,Math.min(500,+$('bulkCount').value||20));
+  $('bulkStatus').textContent='Generating '+count+' variations…';
+  setTimeout(function(){
+    var seeds=generateUniqueSeeds(count);
+    var icons=seeds.map(function(s){return generateIcon(s)});
+    var iconSz=128,pad=8;
+    var cols=Math.ceil(Math.sqrt(count));
+    var rows=Math.ceil(count/cols);
+    var w=cols*(iconSz+pad)+pad,h=rows*(iconSz+pad)+pad;
+    var parts=['<svg xmlns="http://www.w3.org/2000/svg" width="'+w+'" height="'+h+'">'];
+    parts.push('<rect width="'+w+'" height="'+h+'" fill="'+(P.bg==='#ffffff'?'#ffffff':P.bg)+'"/>');
+    for(var i=0;i<icons.length;i++){
+      var col=i%cols,row=Math.floor(i/cols);
+      var x=pad+col*(iconSz+pad),y=pad+row*(iconSz+pad);
+      var svg=iconToSVG(icons[i],iconSz,P.bg==='#ffffff'?'transparent':P.bg);
+      // Strip outer <svg> tag and embed as <g> with transform
+      var inner=svg.replace(/<svg[^>]*>/,'').replace(/<\/svg>/,'');
+      parts.push('<g transform="translate('+x+','+y+')">'+inner+'</g>');
+    }
+    parts.push('</svg>');
+    var blob=new Blob([parts.join('')],{type:'image/svg+xml'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='iso-icons-grid-'+count+'.svg';
+    a.click();
+    $('bulkStatus').textContent='Exported '+icons.length+' icons as grid SVG';
+  },50);
+}
+
+function bulkExportIndividual(){
+  var count=Math.max(1,Math.min(500,+$('bulkCount').value||20));
+  $('bulkStatus').textContent='Generating '+count+' variations…';
+  setTimeout(function(){
+    var seeds=generateUniqueSeeds(count);
+    var icons=seeds.map(function(s){return generateIcon(s)});
+    var bg=P.bg==='#ffffff'?'transparent':P.bg;
+    // Create combined HTML file with all SVGs for easy saving
+    var parts=['<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Iso Icons Export</title>'];
+    parts.push('<style>body{background:#f5f5f0;display:flex;flex-wrap:wrap;gap:8px;padding:16px}svg{background:#fff;border-radius:8px}</style></head><body>');
+    for(var i=0;i<icons.length;i++){
+      parts.push(iconToSVG(icons[i],256,bg));
+    }
+    parts.push('</body></html>');
+    var blob=new Blob([parts.join('')],{type:'text/html'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='iso-icons-'+count+'.html';
+    a.click();
+    $('bulkStatus').textContent='Exported '+icons.length+' icons as HTML';
+  },50);
+}
+
+function copySeed(){
+  if(!allIcons.length)return;
+  var icon=allIcons[selectedIdx];
+  var info='Seed: '+icon.seed+' | Sym: '+['6-fold','3-mirror','3-flip','dihedral','2-mirror','3-fold','2-fold','mirror'][P.sym]+' | Sides: '+Math.round(P.pn)+' | Skew: '+P.pk.toFixed(2)+' | Indent: '+P.pi.toFixed(2)+' | Trapeze: '+P.pz.toFixed(2)+' | Rotate: '+P.pr+' | Shape: '+(P.sh>=36?'circle':P.sh)+' | Grid: '+P.gr+' | Arm: '+P.as+' | Scatter: '+P.sc+' | Total: '+totalPieces()+' | Width: '+P.wd+' | Height: '+P.ht+' | Gap: '+P.ga+' | Spacing: '+P.sp;
+  navigator.clipboard.writeText(info).then(function(){
+    $('seedInfo').textContent='Copied: '+info;
+  });
+}
+
+// --- Presets ---
+var PRESETS_KEY='iso-icon-presets';
+
+function getPresets(){
+  try{return JSON.parse(localStorage.getItem(PRESETS_KEY))||[]}
+  catch(e){return[]}
+}
+
+function setPresets(presets){
+  localStorage.setItem(PRESETS_KEY,JSON.stringify(presets));
+  // Also save to file via hidden download link for local persistence
+  renderPresets();
+}
+
+function savePreset(){
+  var name=$('presetName').value.trim();
+  if(!name)return;
+  var presets=getPresets();
+  // Overwrite if same name exists
+  presets=presets.filter(function(p){return p.name!==name});
+  presets.push({name:name,params:JSON.parse(JSON.stringify(P))});
+  setPresets(presets);
+  $('presetName').value='';
+}
+
+function loadPreset(preset){
+  var keys=Object.keys(preset.params);
+  for(var i=0;i<keys.length;i++) P[keys[i]]=preset.params[keys[i]];
+  if(!Array.isArray(P.rc)||P.rc.length!==4) P.rc=[1,1,1,1];
+  // Backward compat: map old taper to trapeze
+  if(P.ta!==undefined){P.pz=P.ta;delete P.ta}
+  if(P.pp!==undefined){delete P.pp}
+  delete P.ps;
+  delete P.pe;
+  // Ensure parametric shape params have defaults
+  if(P.pn===undefined)P.pn=4;
+  if(P.pk===undefined)P.pk=0;
+  if(P.pi===undefined)P.pi=0;
+  if(P.pz===undefined)P.pz=0.25;
+  if(P.pr===undefined)P.pr=0;
+  if(P.lk===undefined)P.lk=0;
+  // Sync slider values
+  var sliders={wd:'wd',ht:'ht',ga:'ga',sp:'sp',pz:'pz',rn:'rn',as:'as',sc:'sc',gr:'gr',pn:'pn',pk:'pk',pi:'pi',pr:'pr'};
+  Object.keys(sliders).forEach(function(k){
+    var el=$(sliders[k]);
+    if(el)el.value=P[k];
+  });
+  for(var i=1;i<=4;i++){$('rc'+i).value=P.rc[i-1];$('rc'+i+'v').textContent=P.rc[i-1].toFixed(2)}
+  syncShapeSliders();
+  setAllCorners();
+  updBtns();
+  updateReadouts();
+  regenerate();
+}
+
+function deletePreset(name){
+  if(!confirm('Delete preset "'+name+'"?'))return;
+  var presets=getPresets().filter(function(p){return p.name!==name});
+  setPresets(presets);
+}
+
+function exportPresets(){
+  var presets=getPresets();
+  if(!presets.length)return;
+  var blob=new Blob([JSON.stringify(presets,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='iso-icon-presets.json';
+  a.click();
+}
+
+function importPresets(e){
+  var file=e.target.files[0];
+  if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(){
+    try{
+      var imported=JSON.parse(reader.result);
+      if(!Array.isArray(imported))return;
+      var presets=getPresets();
+      var names={};
+      presets.forEach(function(p){names[p.name]=1});
+      imported.forEach(function(p){
+        if(p.name&&p.params&&!names[p.name]){presets.push(p);names[p.name]=1}
+      });
+      setPresets(presets);
+    }catch(ex){alert('Invalid preset file')}
+  };
+  reader.readAsText(file);
+  e.target.value='';
+}
+
+function renderPresets(){
+  var list=$('presetList');
+  list.innerHTML='';
+  var presets=getPresets();
+  presets.forEach(function(p){
+    var d=document.createElement('div');
+    d.className='preset-item';
+    var name=document.createElement('span');
+    name.className='preset-name';
+    name.textContent=p.name;
+    name.onclick=function(){loadPreset(p)};
+    var del=document.createElement('button');
+    del.className='del';
+    del.textContent='×';
+    del.onclick=function(){deletePreset(p.name)};
+    d.appendChild(name);
+    d.appendChild(del);
+    list.appendChild(d);
+  });
+  // Import/export buttons
+  if(presets.length){
+    var exp=document.createElement('button');
+    exp.textContent='Export';
+    exp.className='micro';
+    exp.style.cssText='margin-top:6px;margin-right:4px';
+    exp.onclick=exportPresets;
+    list.appendChild(exp);
+  }
+  var imp=document.createElement('button');
+  imp.textContent='Import';
+  imp.className='micro';
+  imp.style.cssText='margin-top:6px';
+  imp.onclick=function(){var f=document.createElement('input');f.type='file';f.accept='.json';f.onchange=importPresets;f.click()};
+  list.appendChild(imp);
+}
+
+renderPresets();
+generateBatch();
+renderShapePreview();
+if(allIcons.length)$('seedInfo').textContent=allIcons[0].seed;
+</script>
+</body>
+</html>
