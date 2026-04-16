@@ -9,7 +9,7 @@
 - Removed all old `.preset-item`, `.preset-name`, `.del` CSS rules.
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -21,7 +21,7 @@
 - `.readout` now matches `.bb` well: removed the `1px solid rgba(...)` border, border-radius bumped from `5px` to `7px`. Background and box-shadow were already shared (`--well-bg`, `--well-shadow`).
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -36,7 +36,7 @@
 - The old approach auto-fit the tile into a fixed 80×80 canvas, causing cross-coupling. Using the actual grid-display scale means the preview tile is visually identical in size to the tiles in the icon grid. Changing grid-size or icon-size dynamically updates the preview scale so the match holds across all settings.
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -51,7 +51,7 @@
 - "Tiles" better describes what's on the board — discrete shapes laid into a lattice — than the more generic "piece" or the overloaded "Shape" (which was confusing since the section also controls per-tile geometry). Renaming the section + readout + adjacent tooltips keeps the vocabulary consistent in everything the user actually reads.
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -66,7 +66,7 @@
 - Three equal cells read as a single instrument strip instead of one dominant value + one secondary; the `Total` pieces number is conceptually the same kind of scalar as Uniques and Seed, so it belongs in the same row styled the same way. Engraved rules feel truer to the physical-instrument metaphor (panel incision + light catching the lower lip) than a flat grey border, and they're less intrusive on a dense control surface. Locked title height stops the header from looking stepped — the left-edge wordmark and right-side readout now share one clean baseline.
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -82,7 +82,7 @@
 - Round thumb was reading with a heavier perimeter than flat buttons because the border alpha sat around 50% charcoal and the outer shadow was dark-halo strength. Against the same light panel the square buttons live on, that made the thumb look framed while the squares looked seamless. Unifying the border token and hairline shadow means every button — round or square — has the same edge weight in every state.
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -100,7 +100,7 @@
 - The slider thumb (the only round button) was lighting up blue on hover/active, but every square button still went lavender. That's two different "interactive" signals in one UI. Picking blue as the single interactive signal — same token (`--blue`) that already means "selected" in toggle buttons — means the hover state of a toggle reads as a preview of selection, and nothing else in the UI competes for the interactive-color slot. Lavender becomes a pure neutral again.
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -116,7 +116,7 @@
 - Previous groove was too dark and too flat — it read as a black slot rather than a real recessed channel. A physical plastic groove shows the ambient light picking up the curved inner surface, producing a subtle lighter band mid-height. Three stops with a lighter middle and slightly darker top/bottom approximates that optical behavior.
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -133,7 +133,7 @@
 - Reference image shows a TE-style recessed groove with a bright chrome rim and a light circular button that you'd expect to light up on touch. Previous sliders had light tracks and dark thumbs — the inversion here (dark recess, light interactive element) matches physical-instrument metaphors where the moving part catches light while the channel stays in shadow. Blue-on-hover uses the existing `--blue` accent token, so the "lit" state is semantically the same signal the app uses everywhere else for interactive/selected states.
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -150,7 +150,7 @@
 - Previous header was honest but timid — small title chip, inline 11px readouts, everything visually equal. The workbench aesthetic calls for a confident nameplate and a dominant numeric readout; UNI (how many unique icons this parameter space can generate) is the most useful signal in the app and deserved hero treatment. The rest of the amplification (LED glow on open sections, firmer selected state) reinforces the tactile instrument-panel metaphor without introducing any AI-slop tropes (gradients-as-decoration, glassmorphism, neon). Every change stays within the existing three-accent palette and the light-only chassis.
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -166,7 +166,7 @@
 - Internal sym indices (0–7) are intentionally preserved so existing saved presets keep rendering the same pattern — only the UI order changed. The old sym=7 ("mirror") code path is still live for backward compatibility with any preset that referenced it, it just has no button.
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -182,7 +182,7 @@
 - Also fixes a latent reference-sharing bug: `P.rc` was being assigned the preset's array directly, so editing the Rounding sliders could silently mutate the in-memory preset until the next `renderPresets()`. Deep-copy on load prevents that.
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -197,7 +197,7 @@
 - **Bug 2 — preset regression.** `regenerate()` was replacing `allSeeds` with the current dedup pass: `allSeeds = validSeeds`. When a preset's params caused many seeds to collapse to identical fingerprints, the pool shrank; the original seeds were gone. Clicking back to an earlier, more varied preset then rebuilt from the reduced pool, so the grid no longer matched what the preset first produced. The fix preserves `allSeeds` across regenerations — the pool only changes on explicit Generate / Load more.
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -216,7 +216,7 @@
 - Every `.s` row previously had a uniform 11px bottom margin — no visible grouping, no rhythm, monotonous to scan in a dense controls-heavy panel. Swiss-rhythm brief calls for hierarchy through space, not dividers. This pass introduces variety without boxes. Total pieces kept reading as a broken slider (labeled row with no input); making it a true readout restores honesty to the workbench. The floating link button and the inline divider in Export were both lazy separators — replaced with spacing and inline-composition.
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -234,7 +234,7 @@
 - Previous version: button shadows competed with the chassis; slider grooves read as drawn rather than physical. Original TE calculator creates depth via recessed wells around controls, not heavy shadows on the controls themselves — this is more honest to the reference.
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -254,7 +254,7 @@
 - Worked through the 6-item restyle todo list established after the initial button pass (see `.impeccable.md` for design context)
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -277,7 +277,7 @@
 - Project adopted Teenage Engineering calculator aesthetic (see `.impeccable.md`); buttons are the highest-impact surface to establish the tactile, Swiss-precision feel
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -291,7 +291,7 @@
 - The slider already covers side-count selection; the buttons were redundant. Promoting Sides to the top reflects that it's the primary shape decision.
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -306,7 +306,7 @@
 - Named presets bundled multiple parameters and overlapped with what the existing sliders already control; pure side-count buttons give a clearer mental model
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -319,7 +319,7 @@
 - Polygons with the `+π/n` angle offset don't reach `x=±halfL` (e.g. a square's vertices sit at `x≈±0.707*halfL`), so the old formula left a flat edge at `pz=1.0` instead of converging to a point
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -334,7 +334,7 @@
 - Point and Trapeze produced visually equivalent results on opposite sides; the redundancy added control surface without distinct utility
 
 **Files Modified:**
-- `iso-icon-generator.html`
+- `hexfold.html`
 
 ---
 
@@ -350,7 +350,7 @@
 - Users need to export many variations at once for design exploration and asset generation
 
 **Files Modified:**
-- `iso-icon-generator.html` — HTML for bulk export UI, bulkExportGrid() and bulkExportIndividual() functions
+- `hexfold.html` — HTML for bulk export UI, bulkExportGrid() and bulkExportIndividual() functions
 
 ---
 
@@ -368,7 +368,7 @@
 - Corners button position is more natural next to the label
 
 **Files Modified:**
-- `iso-icon-generator.html` — HTML restructure, new CSS for preview-header
+- `hexfold.html` — HTML restructure, new CSS for preview-header
 
 ---
 
@@ -387,7 +387,7 @@
 - Code duplication between plankPts and renderShapePreview made both slower and harder to maintain
 
 **Files Modified:**
-- `iso-icon-generator.html` — BATCH reduction, plankPts cache, shared shapeVerts(), async countVariations(), border removal
+- `hexfold.html` — BATCH reduction, plankPts cache, shared shapeVerts(), async countVariations(), border removal
 
 ---
 
@@ -405,7 +405,7 @@
 - Border feature removed per user request
 
 **Files Modified:**
-- `iso-icon-generator.html` — HTML restructure, renderShapePreview rewrite, border removal
+- `hexfold.html` — HTML restructure, renderShapePreview rewrite, border removal
 
 ---
 
@@ -426,7 +426,7 @@
 - Control order now flows from basic dimensions to modifiers
 
 **Files Modified:**
-- `iso-icon-generator.html` — plankPts rewrite, HTML restructure, new functions, preset/compat updates
+- `hexfold.html` — plankPts rewrite, HTML restructure, new functions, preset/compat updates
 - `docs/plans/2026-04-09-shape-controls-redesign.md` — design doc
 - `docs/plans/2026-04-09-shape-controls-impl.md` — implementation plan
 
@@ -444,7 +444,7 @@
 - Gives immediate visual feedback of the piece shape without needing to look at the icon grid
 
 **Files Modified:**
-- `iso-icon-generator.html` — added shapePreview div, renderShapePreview() function, hooked into rerender and init
+- `hexfold.html` — added shapePreview div, renderShapePreview() function, hooked into rerender and init
 
 ---
 
@@ -465,7 +465,7 @@
 - Users can start from a preset and tweak, or create entirely new shapes
 
 **Files Modified:**
-- `iso-icon-generator.html` — new params, plankPts rewrite, HTML sliders, preset buttons, compat updates
+- `hexfold.html` — new params, plankPts rewrite, HTML sliders, preset buttons, compat updates
 - `docs/plans/2026-04-08-parametric-shape-design.md` — design doc
 - `docs/plans/2026-04-08-parametric-shape-impl.md` — implementation plan
 
@@ -486,7 +486,7 @@
 - User requested per-corner rounding in addition to global rounding
 
 **Files Modified:**
-- `iso-icon-generator.html` — new parameters, HTML sliders, rendering logic, preset handling
+- `hexfold.html` — new parameters, HTML sliders, rendering logic, preset handling
 
 ---
 
@@ -502,7 +502,7 @@
 - User requested toolbar be left-aligned with no margin
 
 **Files Modified:**
-- `iso-icon-generator.html` — CSS variable for grid, new slider, toolbar margin removed
+- `hexfold.html` — CSS variable for grid, new slider, toolbar margin removed
 
 ---
 
@@ -521,7 +521,7 @@
 - Class names should reflect purpose (toolbar/preview) not position (left/right)
 
 **Files Modified:**
-- `iso-icon-generator.html` — CSS and HTML class renames, spacing changes
+- `hexfold.html` — CSS and HTML class renames, spacing changes
 
 ---
 
@@ -538,7 +538,7 @@
 - Fixed uneven spacing around the panel (had padding-left but no padding-right)
 
 **Files Modified:**
-- `iso-icon-generator.html` — CSS changes to `.right` and mobile media query
+- `hexfold.html` — CSS changes to `.right` and mobile media query
 
 ---
 
@@ -546,7 +546,7 @@
 
 **What Changed:**
 - Restructured sidebar into 5 collapsible `<details>` sections: Structure, Geometry, Spacing, Export, Presets
-- Added visible page title "Iso Icon Generator"
+- Added visible page title "Hexfold"
 - Added `title` tooltips to all parameter labels explaining what each control does
 - Added section descriptions ("Pattern layout and complexity", etc.)
 - Added Reset button to restore all parameters to defaults
@@ -567,7 +567,7 @@
 - Goal: elevate from developer debug panel to refined utilitarian tool (Figma-sidebar feel)
 
 **Files Modified:**
-- `iso-icon-generator.html` — full UI/UX overhaul (CSS, HTML structure, JS additions)
+- `hexfold.html` — full UI/UX overhaul (CSS, HTML structure, JS additions)
 
 ---
 
@@ -585,7 +585,7 @@
 - User expected 1.0 to produce circles/ovals, not semicircles
 
 **Files Modified:**
-- `iso-icon-generator.html` - Two-phase rounding with ellipse interpolation in iconToSVG rendering
+- `hexfold.html` - Two-phase rounding with ellipse interpolation in iconToSVG rendering
 
 ---
 
@@ -601,7 +601,7 @@
 - Tapered pieces had visually non-uniform rounding — narrow ends appeared much more rounded than wide ends because the absolute radius consumed more of the short edges
 
 **Files Modified:**
-- `iso-icon-generator.html` - Changed rounding formula, slider range, readout format
+- `hexfold.html` - Changed rounding formula, slider range, readout format
 
 ---
 
@@ -618,7 +618,7 @@
 - User wanted equal space around each piece, not just radial offset from center
 
 **Files Modified:**
-- `iso-icon-generator.html` - Added P.sp, Spacing slider, insetPoly(), updated readouts and preset sync
+- `hexfold.html` - Added P.sp, Spacing slider, insetPoly(), updated readouts and preset sync
 
 ---
 
@@ -637,7 +637,7 @@
 - User wanted to save and return to parameter combinations
 
 **Files Modified:**
-- `iso-icon-generator.html` - Added preset UI, save/load/delete/export/import functions
+- `hexfold.html` - Added preset UI, save/load/delete/export/import functions
 
 ---
 
@@ -656,7 +656,7 @@
 - Dragging sliders with 50+ icons loaded caused noticeable lag due to synchronous full-grid rebuilds on every input event
 
 **Files Modified:**
-- `iso-icon-generator.html` — all changes in `<script>` block
+- `hexfold.html` — all changes in `<script>` block
 
 ---
 
@@ -674,7 +674,7 @@
 - User wanted intuitive width/height sizing with gap as spacing (margin) rather than size reduction (padding)
 
 **Files Modified:**
-- `iso-icon-generator.html` - Replaced P.fi with P.wd/P.ht, changed gap to offset, updated UI and readouts
+- `hexfold.html` - Replaced P.fi with P.wd/P.ht, changed gap to offset, updated UI and readouts
 
 ---
 
@@ -691,7 +691,7 @@
 - User wanted different base piece shapes beyond the default trapezoid
 
 **Files Modified:**
-- `iso-icon-generator.html` - Added P.ps, piece shape buttons, rewrote plankPts with 6 shape modes
+- `hexfold.html` - Added P.ps, piece shape buttons, rewrote plankPts with 6 shape modes
 
 ---
 
@@ -709,7 +709,7 @@
 - User wanted fixed 5-column layout, scrollable page, and incremental loading instead of a count slider
 
 **Files Modified:**
-- `iso-icon-generator.html` - Removed P.cn, added BATCH, loadMore(), appendGrid(), sticky panel, fixed grid columns
+- `hexfold.html` - Removed P.cn, added BATCH, loadMore(), appendGrid(), sticky panel, fixed grid columns
 
 ---
 
@@ -726,7 +726,7 @@
 - User wanted to see how many distinct symbols are possible with current settings
 
 **Files Modified:**
-- `iso-icon-generator.html` - Added countVariations(), unique variations display
+- `hexfold.html` - Added countVariations(), unique variations display
 
 ---
 
@@ -743,7 +743,7 @@
 - User noticed different seeds producing identical icons after symmetry stamping (e.g. multiple seeds mapping to the same arm shape)
 
 **Files Modified:**
-- `iso-icon-generator.html` - Added dedup logic, increased count max
+- `hexfold.html` - Added dedup logic, increased count max
 
 ---
 
@@ -761,7 +761,7 @@
 - User wanted more modes producing interesting results like dihedral
 
 **Files Modified:**
-- `iso-icon-generator.html` - Added 4 symmetry modes, refactored stamping, updated button labels
+- `hexfold.html` - Added 4 symmetry modes, refactored stamping, updated button labels
 
 ---
 
@@ -779,7 +779,7 @@
 - User wanted configurable grid outline shape with pieces clipped to it, and grid shown as outlines
 
 **Files Modified:**
-- `iso-icon-generator.html` - Added P.sh, shape buttons, shapeVerts(), insideShape(), updated gridSVG and generateIcon
+- `hexfold.html` - Added P.sh, shape buttons, shapeVerts(), insideShape(), updated gridSVG and generateIcon
 
 ---
 
@@ -795,7 +795,7 @@
 - Previous grid was an abstract line overlay that didn't correspond to actual piece geometry
 
 **Files Modified:**
-- `iso-icon-generator.html` - Rewrote `gridSVG()` to render ghost plank shapes instead of lines
+- `hexfold.html` - Rewrote `gridSVG()` to render ghost plank shapes instead of lines
 
 ---
 
@@ -811,7 +811,7 @@
 - User wanted control over piece scale relative to the hex boundary
 
 **Files Modified:**
-- `iso-icon-generator.html` - Added grid size param, slider, parameterized all radius references
+- `hexfold.html` - Added grid size param, slider, parameterized all radius references
 
 ---
 
@@ -830,7 +830,7 @@
 - User wanted to explore parameter space without losing interesting seeds
 
 **Files Modified:**
-- `iso-icon-generator.html` - Added allSeeds, regenerate(), updated all structural param handlers
+- `hexfold.html` - Added allSeeds, regenerate(), updated all structural param handlers
 
 ---
 

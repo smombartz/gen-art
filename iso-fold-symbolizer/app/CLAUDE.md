@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Iso Icon Generator — a browser-based tool for generating hexagonal icons from isometric trapezoid pieces. Single HTML file (`app/iso-icon-generator2.html`), vanilla JS, no dependencies or build step.
+Hexfold — a browser-based tool for generating hexagonal icons from procedural tile pieces. Single HTML file (`app/hexfold.html`), vanilla JS, no dependencies or build step.
 
 Icons are built from **trapezoids on a triangular lattice**, grown via random walk within an angular wedge, then stamped with rotational symmetry (4 modes: 6-fold, 3 mirror, 3 flip, dihedral). Each icon is deterministic from a 32-bit seed + parameters.
 
@@ -88,8 +88,8 @@ Don't log:
 
 ### Workflow
 
-1. **Back up the current file** to `bkp/` with the date and time of its last edit appended (e.g. `bkp/iso-icon-generator-2026-04-08-1423.html`). Use the file's actual last-modified timestamp, not the current time. Create `bkp/` if it doesn't exist.
-2. **Make the code change(s)** — always edit the main file directly (e.g. `iso-icon-generator.html`), never rename or version-number it.
+1. **Back up the current file** to `bkp/` with the date and time of its last edit appended (e.g. `bkp/hexfold-2026-04-08-1423.html`). Use the file's actual last-modified timestamp, not the current time. Create `bkp/` if it doesn't exist.
+2. **Make the code change(s)** — always edit the main file directly (e.g. `hexfold.html`), never rename or version-number it.
 3. **Write the log entry** in the format above
 4. **Append to `docs/log.md`**
 5. **Inform the user** of what was done in your response
@@ -125,8 +125,8 @@ Always preserve existing log entries. New entries go at the **top** (most recent
 ## Current Project State
 
 ### File Inventory
-- `iso-icon-generator.html` — main app (single-file, self-contained). Always edit this file directly.
-- `bkp/` — timestamped backups (e.g. `iso-icon-generator-2026-04-08-1423.html`)
+- `hexfold.html` — main app (single-file, self-contained). Always edit this file directly.
+- `bkp/` — timestamped backups (e.g. `hexfold-2026-04-08-1423.html`)
 - `README.md` — detailed technical documentation of grid math, piece geometry, symmetry modes
 - `docs/log.md` — change log
 

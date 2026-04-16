@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Iso Icon Generator</title>
+<title>Hexfold</title>
+<link rel="icon" type="image/png" href="favicon.png">
 <style>
 :root{
   --blue:#59B3F0;--blue-hv:#3d9fd4;--blue-ac:#2b7ab8;
@@ -278,7 +279,7 @@ body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:va
   background:linear-gradient(180deg,var(--lav-pale) 0%,var(--lav) 100%);
   border-right:1px solid var(--gray);
   box-shadow:var(--shadow-drop),var(--shadow-inset);
-  padding:18px 16px;order:-1;max-height:100vh;overflow-y:auto;
+  padding:18px 16px;order:-1;min-height:100vh;max-height:100vh;overflow-y:auto;
   scrollbar-width:none;
 }
 .toolbar::-webkit-scrollbar{display:none;
@@ -472,7 +473,7 @@ button:disabled,button[disabled]{
 <div class="wrap">
 <div class="preview">
 <div class="preview-header">
-<h1 class="title">Iso Icon Generator</h1>
+<h1 class="title">Hexfold</h1>
 <div class="readout">
 <div class="readout-cell"><span class="readout-label">Total Tiles</span><span class="readout-value" id="tpv">4</span></div>
 <div class="readout-cell"><span class="readout-label">Uniques</span><span class="readout-value" id="uvv">—</span></div>
@@ -488,7 +489,19 @@ button:disabled,button[disabled]{
 </div>
 <div class="toolbar">
 
-<details class="section" open>
+<details class="section" data-id="presets" open>
+<summary>Presets</summary>
+<p class="section-desc">Save and recall parameter sets</p>
+<div id="presetList"></div>
+<div id="presetSaveRow" style="display:none;margin-top:var(--space-sm)">
+<div style="display:flex;gap:6px">
+<input type="text" id="presetName" placeholder="Preset name" style="flex:1;min-width:0">
+<button class="btn commit" onclick="savePreset();$('presetSaveRow').style.display='none'">Save</button>
+</div>
+</div>
+</details>
+
+<details class="section" data-id="structure">
 <summary>Structure</summary>
 <p class="section-desc">Pattern layout and complexity</p>
 
@@ -511,7 +524,7 @@ button:disabled,button[disabled]{
 <input type="range" min="50" max="200" step="5" value="160" id="is" oninput="document.querySelector('.grid').style.setProperty('--icon-size',this.value+'px');$('isv').textContent=this.value;renderShapePreview()"></div>
 </details>
 
-<details class="section" open>
+<details class="section" data-id="tiles">
 <summary>Tiles</summary>
 <p class="section-desc">Tile shape and deformation</p>
 
@@ -555,7 +568,7 @@ button:disabled,button[disabled]{
 </div>
 </details>
 
-<details class="section">
+<details class="section" data-id="spacing">
 <summary>Spacing</summary>
 <p class="section-desc">Gaps and insets between tiles</p>
 
@@ -566,16 +579,18 @@ button:disabled,button[disabled]{
 <input type="range" min="0" max="100" step="0.5" value="0" id="sp" oninput="P.sp=+this.value;throttledRerender()"></div>
 </details>
 
-<details class="section">
+<details class="section" data-id="export">
 <summary>Export</summary>
 <p class="section-desc">Copy, download, or batch export</p>
 
-<div class="sub-label">Selected</div>
-<div class="top" style="margin-top:var(--space-xs)">
-<button id="cp" onclick="copySVG()">Copy SVG</button>
-<button onclick="downloadSVG()">Download SVG</button>
-<button onclick="copySeed()">Copy seed</button>
-</div>
+<div class="sub-label">SVG</div>
+<button class="btn" id="cp" onclick="copySVG()">Copy</button>
+<button class="btn" onclick="downloadSVG()">Download</button>
+<div class="sub-label" style="margin-top:var(--space-md)">PNG</div>
+<button class="btn" onclick="copyPNG()">Copy</button>
+<button class="btn" onclick="downloadPNG()">Download</button>
+<div class="sub-label" style="margin-top:var(--space-md)">Seed</div>
+<button class="btn" onclick="copySeed()">Copy</button>
 
 <div style="margin-top:var(--space-lg)">
 <div class="sub-label">Bulk</div>
@@ -586,16 +601,6 @@ button:disabled,button[disabled]{
 </div>
 <div id="bulkStatus"></div>
 </div>
-</details>
-
-<details class="section">
-<summary>Presets</summary>
-<p class="section-desc">Save and recall parameter sets</p>
-<div style="display:flex;gap:6px;margin-bottom:var(--space-md)">
-<input type="text" id="presetName" placeholder="Preset name" style="flex:1;min-width:0">
-<button class="btn commit" onclick="savePreset()">Save</button>
-</div>
-<div id="presetList"></div>
 </details>
 
 </div>
@@ -1349,8 +1354,49 @@ function downloadSVG(){
   var blob=new Blob([svg],{type:'image/svg+xml'});
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='iso-icon-'+icon.seed+'.svg';
+  a.download='hexfold-'+icon.seed+'.svg';
   a.click();
+}
+
+function svgToCanvas(svgStr,size,cb){
+  var blob=new Blob([svgStr],{type:'image/svg+xml;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var img=new Image();
+  img.onload=function(){
+    var c=document.createElement('canvas');
+    c.width=size;c.height=size;
+    var ctx=c.getContext('2d');
+    ctx.drawImage(img,0,0,size,size);
+    URL.revokeObjectURL(url);
+    cb(c);
+  };
+  img.src=url;
+}
+
+function copyPNG(){
+  if(!allIcons.length)return;
+  var icon=allIcons[selectedIdx];
+  var svg=iconToSVG(icon,1024,P.bg==='#ffffff'?'#ffffff':P.bg);
+  svgToCanvas(svg,1024,function(c){
+    c.toBlob(function(blob){
+      navigator.clipboard.write([new ClipboardItem({'image/png':blob})]).then(function(){
+        var btn=document.querySelector('[onclick="copyPNG()"]');
+        if(btn){btn.textContent='Copied!';setTimeout(function(){btn.textContent='Copy'},1500)}
+      });
+    },'image/png');
+  });
+}
+
+function downloadPNG(){
+  if(!allIcons.length)return;
+  var icon=allIcons[selectedIdx];
+  var svg=iconToSVG(icon,1024,P.bg==='#ffffff'?'#ffffff':P.bg);
+  svgToCanvas(svg,1024,function(c){
+    var a=document.createElement('a');
+    a.href=c.toDataURL('image/png');
+    a.download='hexfold-'+icon.seed+'.png';
+    a.click();
+  });
 }
 
 function bulkExportGrid(){
@@ -1416,7 +1462,7 @@ function copySeed(){
 }
 
 // --- Presets ---
-var PRESETS_KEY='iso-icon-presets';
+var PRESETS_KEY='hexfold-presets';
 
 function getPresets(){
   try{return JSON.parse(localStorage.getItem(PRESETS_KEY))||[]}
@@ -1485,7 +1531,7 @@ function exportPresets(){
   var blob=new Blob([JSON.stringify(presets,null,2)],{type:'application/json'});
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
-  a.download='iso-icon-presets.json';
+  a.download='hexfold-presets.json';
   a.click();
 }
 
@@ -1532,50 +1578,83 @@ function renderPresets(){
     list.appendChild(well);
   }
   var row=document.createElement('div');
-  row.style.cssText='display:flex;gap:4px;margin-top:6px';
+  row.style.cssText='display:flex;gap:4px;margin-top:6px;flex-wrap:wrap';
+  var sav=document.createElement('button');
+  sav.textContent='Save';
+  sav.className='btn commit';
+  sav.onclick=function(){var sr=$('presetSaveRow');sr.style.display=sr.style.display==='none'?'block':'none';if(sr.style.display!=='none')$('presetName').focus()};
+  row.appendChild(sav);
   if(presets.length){
     var exp=document.createElement('button');
     exp.textContent='Export';
-    exp.className='micro';
+    exp.className='btn';
     exp.onclick=exportPresets;
     row.appendChild(exp);
   }
   var imp=document.createElement('button');
   imp.textContent='Import';
-  imp.className='micro';
+  imp.className='btn';
   imp.onclick=function(){var f=document.createElement('input');f.type='file';f.accept='.json';f.onchange=importPresets;f.click()};
   row.appendChild(imp);
   list.appendChild(row);
 }
 
-// Seed built-in presets — merges with existing, skipping names that already exist
+// Built-in presets — reset on version bump, then merge user-saved presets back
+var BUILTIN_PRESETS_VERSION=2;
 (function(){
-  var d={rc:[1,1,1,1],bg:'#ffffff',lk:0};
   var builtins=[
-    {name:'Snowflake',  params:Object.assign({},d,{sym:3,sh:6,gr:5,as:6,sc:0,pn:3,wd:0.7,ht:0.9,pz:0,pk:0,pi:0,pr:0,rn:0.4,ga:0,sp:3})},
-    {name:'Pinwheel',   params:Object.assign({},d,{sym:2,sh:6,gr:4,as:5,sc:2,pn:4,wd:0.6,ht:1.2,pz:0.8,pk:0,pi:0,pr:30,rn:0.1,ga:5,sp:0})},
-    {name:'Starburst',  params:Object.assign({},d,{sym:0,sh:6,gr:5,as:10,sc:3,pn:4,wd:0.4,ht:1.5,pz:0.3,pk:0,pi:0,pr:0,rn:0,ga:8,sp:0})},
-    {name:'Honeycomb',  params:Object.assign({},d,{sym:1,sh:6,gr:3,as:4,sc:0,pn:6,wd:1.0,ht:1.0,pz:0,pk:0,pi:0,pr:0,rn:0.35,ga:0,sp:8})},
-    {name:'Crystal',    params:Object.assign({},d,{sym:3,sh:3,gr:4,as:3,sc:0,pn:5,wd:0.9,ht:0.8,pz:0.15,pk:0.3,pi:0,pr:0,rn:0.2,ga:0,sp:2})},
-    {name:'Mandala',    params:Object.assign({},d,{sym:5,sh:36,gr:6,as:8,sc:4,pn:4,wd:0.7,ht:0.7,pz:0.25,pk:0,pi:0,pr:0,rn:0.15,ga:0,sp:4})},
-    {name:'Kaleidoscope',params:Object.assign({},d,{sym:4,sh:6,gr:4,as:5,sc:5,pn:4,wd:1.2,ht:0.6,pz:0.4,pk:0,pi:0.3,pr:15,rn:0.25,ga:3,sp:0})},
-    {name:'Mosaic',     params:Object.assign({},d,{sym:6,sh:4,gr:3,as:6,sc:3,pn:4,wd:0.9,ht:0.9,pz:0,pk:0,pi:0,pr:45,rn:0,ga:0,sp:5})},
-    {name:'Bloom',      params:Object.assign({},d,{sym:3,sh:6,gr:4,as:5,sc:0,pn:8,wd:1.3,ht:1.3,pz:0,pk:0,pi:-0.3,pr:0,rn:0.7,ga:0,sp:2})},
-    {name:'Shuriken',   params:Object.assign({},d,{sym:2,sh:6,gr:3,as:4,sc:0,pn:3,wd:0.8,ht:1.0,pz:1.0,pk:0,pi:0,pr:0,rn:0.3,ga:10,sp:0})}
+    {name:'Honeycomb',params:{sym:1,as:4,wd:1,ht:1,pz:0,ga:4,sp:15,rn:0.2,rc:[1,1,1,1],bg:'#ffffff',sc:6,gr:4,sh:6,pn:6,pk:0,pi:0,pr:0,lk:1}},
+    {name:'Bloom',params:{sym:3,as:5,wd:1.3,ht:1.3,pz:0,ga:5,sp:25,rn:1,rc:[1,1,1,1],bg:'#ffffff',sc:0,gr:4,sh:6,pn:8,pk:0,pi:0,pr:0,lk:0}},
+    {name:'Slices',params:{sym:0,as:7,wd:1.63,ht:0.8,pz:0.49,ga:-2,sp:14.5,rn:1,rc:[1,1,1,1],bg:'#ffffff',sc:0,gr:3,sh:6,pn:4,pk:0,pi:0,pr:0,lk:0}},
+    {name:'Petals',params:{sym:0,as:4,wd:1.6,ht:0.8,pz:0.36,ga:22,sp:14,rn:1,rc:[1,1,1,1],bg:'#ffffff',sc:0,gr:4,sh:6,pn:4,pk:0,pi:0,pr:0,lk:0}},
+    {name:'Mosaic',params:{sym:0,as:4,wd:0.82,ht:0.92,pz:0.1,ga:0,sp:9.5,rn:0.63,rc:[1,1,1,1],bg:'#ffffff',sc:1,gr:3,sh:6,pn:4,pk:0.1,pi:-0.31,pr:0,lk:0}},
+    {name:'Snowflake',params:{sym:3,as:5,wd:1.25,ht:0.55,pz:0.25,ga:13,sp:7.5,rn:0.74,rc:[1,1,1,1],bg:'#ffffff',sc:1,gr:4,sh:6,pn:4,pk:0,pi:0,pr:0,lk:0}}
   ];
-  builtins.forEach(function(b){b.params.rc=d.rc.slice()});
-  var existing=getPresets();
-  var names={};
-  existing.forEach(function(p){names[p.name]=1});
-  var added=false;
-  builtins.forEach(function(b){
-    if(!names[b.name]){existing.push(b);added=true}
+  var builtinNames={};
+  builtins.forEach(function(b){builtinNames[b.name]=1});
+  var storedVer=+(localStorage.getItem('hexfold-presets-ver')||0);
+  if(storedVer<BUILTIN_PRESETS_VERSION){
+    var userSaved=getPresets().filter(function(p){return!builtinNames[p.name]});
+    setPresets(builtins.concat(userSaved));
+    localStorage.setItem('hexfold-presets-ver',BUILTIN_PRESETS_VERSION);
+  } else {
+    var existing=getPresets();
+    var names={};existing.forEach(function(p){names[p.name]=1});
+    var added=false;
+    builtins.forEach(function(b){if(!names[b.name]){existing.unshift(b);added=true}});
+    if(added) setPresets(existing);
+  }
+})();
+
+// Section open/close persistence
+(function(){
+  var KEY='hexfold-sections';
+  var defaults={presets:true,structure:false,tiles:false,spacing:false,export:false};
+  var saved;
+  try{saved=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+  if(!saved) saved=defaults;
+  document.querySelectorAll('.section[data-id]').forEach(function(sec){
+    var id=sec.dataset.id;
+    if(saved[id]) sec.setAttribute('open',''); else sec.removeAttribute('open');
+    sec.addEventListener('toggle',function(){
+      var state;
+      try{state=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){state={}}
+      state[id]=sec.open;
+      localStorage.setItem(KEY,JSON.stringify(state));
+    });
   });
-  if(added) setPresets(existing);
 })();
 
 renderPresets();
-generateBatch();
+// Load Snowflake preset on first visit, then generate
+var _firstRun=!localStorage.getItem('hexfold-visited');
+if(_firstRun){
+  var _sp=getPresets().find(function(p){return p.name==='Snowflake'});
+  if(_sp){loadPreset(_sp);generateBatch()}else{generateBatch()}
+  localStorage.setItem('hexfold-visited','1');
+} else {
+  generateBatch();
+}
 renderShapePreview();
 if(allIcons.length)$('seedInfo').textContent=allIcons[0].seed;
 </script>

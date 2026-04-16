@@ -1,6 +1,6 @@
-# Iso Icon Generator
+# Hexfold
 
-A browser-based tool for generating hexagonal icons from isometric trapezoid pieces. One HTML file, no dependencies.
+A browser-based tool for generating hexagonal icons from procedural tile pieces. One HTML file, no dependencies.
 
 ## Concept
 
